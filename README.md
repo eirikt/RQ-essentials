@@ -1,4 +1,4 @@
-# RQ-essentials
+## RQ-essentials
 
 [![Build Status](https://travis-ci.org/eirikt/RQ-essentials.svg)](https://travis-ci.org/eirikt/RQ-essentials)
 [![License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
@@ -9,14 +9,14 @@ Most of them quite influenced by RQ's [official documentation][2].
 This library is dependant on [async-rq][3], a CommonJS compliant fork of RQ. 
 RQ is not CommonJS compliant.
 
-## Usage
+### Usage
 
 Usage examples will be added in due course, I guess.
 
 This library will be published to [npm][4], I guess.
 
 
-## [License](#license)
+### [License](#license)
 The MIT License (MIT)
 
 Copyright (c) 2015 Eirik Torske
