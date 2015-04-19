@@ -1,5 +1,8 @@
 # RQ-essentials
 
+[![Build Status](https://travis-ci.org/eirikt/RQ-essentials.svg)](https://travis-ci.org/eirikt/RQ-essentials)
+[![License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
+
 Some basic ("essential") add-ons for Douglas Crockford's excellent [RQ][1] library.
 Most of them quite influenced by RQ's [official documentation][2].
 
