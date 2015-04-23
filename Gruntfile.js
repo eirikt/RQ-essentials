@@ -20,7 +20,7 @@ module.exports = function (grunt) {
                     'echo Available Grunt tasks are:',
                     'echo   test                    executes all Mocha tests',
                     'echo   lint (alias:jshint)     run JSHint',
-                    'echo   test                    installs, builds, and executes all Mocha tests'
+                    'echo   doc (alias:jsdoc)       build JSDoc (in local folder \'docs\''
                 ].join('&&')
             }
         },
@@ -37,7 +37,7 @@ module.exports = function (grunt) {
 
         jshint: {
             all: [
-                'rq-*.js'
+                '*.js'
             ],
             options: {
                 //reporter: 'jslint',

@@ -1,22 +1,24 @@
 ## RQ-essentials
 
 [![Build Status](https://travis-ci.org/eirikt/RQ-essentials.svg)](https://travis-ci.org/eirikt/RQ-essentials)
-&nbsp;&nbsp;
+&nbsp;
 [![Dependency Status](https://www.versioneye.com/user/projects/5533939210e7149066000fe4/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5533939210e7149066000fe4)
-&nbsp;&nbsp;
+&nbsp;
+[![Codacy Badge](https://www.codacy.com/project/badge/4f9fda90eb834d27ae6cc2f539ae263c)](https://www.codacy.com/public/eiriktorske/RQ-essentials)
+&nbsp;
 [![License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
 
 Some basic ("essential") add-ons for Douglas Crockford's excellent [RQ][1] library.
 Most of them quite influenced by RQ's [official documentation][2].
 
 This library is dependant on [async-rq][3], a CommonJS compliant fork of RQ. 
-RQ is not CommonJS compliant.
+RQ is [not][4] CommonJS compliant.
 
 ### Usage
 
 Usage examples will be added in due course, I guess.
 
-This library will be published to [npm][4], I guess.
+This library will be published to [npm][10], I guess.
 
 
 ### [License](#license)
@@ -43,7 +45,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-[1]: https://github.com/douglascrockford/RQ
-[2]: http://rq.crockford.com
-[3]: https://github.com/burningtree/async-rq
-[4]: https://www.npmjs.com
+[1]:  https://github.com/douglascrockford/RQ
+[2]:  http://rq.crockford.com
+[3]:  https://github.com/burningtree/async-rq
+[4]:  https://github.com/douglascrockford/RQ/pull/7#issuecomment-94266330
+[10]: https://www.npmjs.com

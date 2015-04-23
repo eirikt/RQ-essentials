@@ -20,26 +20,28 @@ var _isArray = Array.isArray,
      * @param {*} value the argument
      * @return {*} the given argument
      */
-    _identity = exports.identity = exports.execute = function (value) {
-        'use strict';
-        return value;
-    },
+    _identity = exports.identity = exports.execute = exports.go =
+        function (value) {
+            'use strict';
+            return value;
+        },
 
 
     /**
      * Deep cloning.
      * Sometimes necessary to clone arguments due to <code>Object.freeze()</code> in RQ.
      */
-    _clone = exports.clone = function (arg) {
-        'use strict';
-        if (!arg) {
-            return arg;
-        }
-        if (_isArray(arg)) {
-            return arg.slice();
-        }
-        return _parse(_stringify(arg));
-    },
+    _clone = exports.clone =
+        function (arg) {
+            'use strict';
+            if (!arg) {
+                return arg;
+            }
+            if (_isArray(arg)) {
+                return arg.slice();
+            }
+            return _parse(_stringify(arg));
+        },
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,10 +63,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _nullRequestor = exports.undefined = function (callback, args) {
-        'use strict';
-        return callback(undefined, undefined);
-    },
+    _nullRequestor = exports.undefined =
+        function (callback, args) {
+            'use strict';
+            return callback(undefined, undefined);
+        },
 
 
     /**
@@ -76,10 +79,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _emptyRequestor = exports.null = function (callback, args) {
-        'use strict';
-        return callback(null, undefined);
-    },
+    _emptyRequestor = exports.null =
+        function (callback, args) {
+            'use strict';
+            return callback(null, undefined);
+        },
 
 
     /**
@@ -91,10 +95,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _tautologyRequestor = exports.true = function (callback, args) {
-        'use strict';
-        return callback(true, undefined);
-    },
+    _tautologyRequestor = exports.true =
+        function (callback, args) {
+            'use strict';
+            return callback(true, undefined);
+        },
 
 
     /**
@@ -106,10 +111,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _contradictionRequestor = exports.false = function (callback, args) {
-        'use strict';
-        return callback(false, undefined);
-    },
+    _contradictionRequestor = exports.false =
+        function (callback, args) {
+            'use strict';
+            return callback(false, undefined);
+        },
 
 
     /**
@@ -122,10 +128,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _timestampRequestor = exports.timestamp = exports.now = function (callback, args) {
-        'use strict';
-        return callback(Date.now(), undefined);
-    },
+    _timestampRequestor = exports.timestamp = exports.now =
+        function (callback, args) {
+            'use strict';
+            return callback(Date.now(), undefined);
+        },
 
 
     /**
@@ -137,10 +144,11 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _dateRequestor = exports.date = function (callback, args) {
-        'use strict';
-        return callback(new Date(), undefined);
-    },
+    _dateRequestor = exports.date =
+        function (callback, args) {
+            'use strict';
+            return callback(new Date(), undefined);
+        },
 
 
     /**
@@ -151,10 +159,11 @@ var _isArray = Array.isArray,
      *
      * Just pass things along without doing anything ...
      */
-    _noopRequestor = exports.noop = function (callback, args) {
-        'use strict';
-        return callback(args, undefined);
-    },
+    _noopRequestor = exports.noop =
+        function (callback, args) {
+            'use strict';
+            return callback(args, undefined);
+        },
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,10 +182,11 @@ var _isArray = Array.isArray,
      * This is the curry-friendly version of the primary requestor factory below (with the alias 'then').
      * Especially handy when you have to curry the callback, e.g. when terminating nested requestor pipelines.
      */
-    _terminatorRequestor = exports.terminator = function (g, callback, args) {
-        'use strict';
-        return callback(g(args), undefined);
-    },
+    _terminatorRequestor = exports.terminator =
+        function (g, callback, args) {
+            'use strict';
+            return callback(g(args), undefined);
+        },
 
 
     /**
@@ -186,14 +196,15 @@ var _isArray = Array.isArray,
      *
      * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
      */
-    _interceptorRequestor = exports.interceptor = function (g, y, callback, args) {
-        'use strict';
+    _interceptorRequestor = exports.interceptor =
+        function (g, y, callback, args) {
+            'use strict';
 
-        // Argument 'y' may come from other requestors => cloning arguments due to Object.freeze() in RQ
-        //return callback(g(_clone(y)));
+            // Argument 'y' may come from other requestors => cloning arguments due to Object.freeze() in RQ
+            //return callback(g(_clone(y)));
 
-        return callback(g(y), undefined);
-    },
+            return callback(g(y), undefined);
+        },
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,12 +220,26 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _identityRequestorize = exports.identity = exports.return = function (value) {
-        'use strict';
-        return function requestor(callback, args) {
-            return callback(value, undefined);
-        };
-    },
+    _identityRequestorize = exports.identity = exports.return = exports.value =
+        function (value) {
+            'use strict';
+            return function requestor(callback, args) {
+                return callback(value, undefined);
+            };
+        },
+
+
+    _conditional = exports.conditional = exports.if =
+        function (condition) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    return callback(args, undefined);
+                } else {
+                    return callback(undefined, 'Condition not met');
+                }
+            };
+        },
 
 
     /**
@@ -225,12 +250,13 @@ var _isArray = Array.isArray,
      *
      * A typical sequence requestor ...
      */
-    _failFastFunctionRequestorize = exports.requestorize = exports.requestor = exports.then = exports.do = function (g) {
-        'use strict';
-        return function requestor(callback, args) {
-            return callback(g(args), undefined);
-        };
-    },
+    _failFastFunctionRequestorize = exports.requestorize = exports.requestor = exports.then = exports.do =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                return callback(g(args), undefined);
+            };
+        },
 
 
     /**
@@ -242,17 +268,18 @@ var _isArray = Array.isArray,
      *
      * A typical sequence requestor ...
      */
-    _lenientFunctionRequestorize = exports.lenientRequestorize = exports.lenientRequestor = function (g) {
-        'use strict';
-        return function requestor(callback, args) {
-            var result;
-            try {
-                result = g(args);
-                return callback(result, undefined);
+    _lenientFunctionRequestorize = exports.lenientRequestorize = exports.lenientRequestor =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                var result;
+                try {
+                    result = g(args);
+                    return callback(result, undefined);
 
-            } catch (e) {
-                console.error(e.message);
-                return callback(undefined, e);
-            }
+                } catch (e) {
+                    console.error(e.message);
+                    return callback(undefined, e);
+                }
+            };
         };
-    };

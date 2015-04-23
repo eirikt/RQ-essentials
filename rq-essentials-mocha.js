@@ -18,11 +18,12 @@ var RQ = require('async-rq'),
      *  });
      * </pre>
      */
-    _executeAndVerify = exports.executeAndVerify = function (requestorToTest, initialArguments, verifyFunction, doneFunction) {
-        'use strict';
-        RQ.sequence([
-            requestorToTest,
-            rq.requestorize(verifyFunction),
-            rq.requestorize(doneFunction)
-        ])(rq.identity, initialArguments);
-    };
+    _executeAndVerify = exports.executeAndVerify =
+        function (requestorToTest, initialArguments, verifyFunction, doneFunction) {
+            'use strict';
+            RQ.sequence([
+                requestorToTest,
+                rq.requestorize(verifyFunction),
+                rq.requestorize(doneFunction)
+            ])(rq.identity, initialArguments);
+        };
