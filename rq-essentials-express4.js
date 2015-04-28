@@ -3,17 +3,28 @@
 var utils = require('./utils'),
 
     _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
-        function (response, statusCode) {
+        function (doLog, response, statusCode) {
             'use strict';
             return function requestor(callback, args) {
-                console.log("RQ-essentials-express :: HTTP Response: " + statusCode);
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode);
+                }
                 response.sendStatus(statusCode);
-                return callback(args);
+                return callback(args, undefined);
             };
         },
 
-    _dispatchResponseWithBody = exports.dispatchResponse =
-        function (response, statusCode, responseKeys) {
+    _dispatchResponse = exports.dispatchResponse =
+        function (doLog, response, statusCode) {
+            'use strict';
+            return function requestor(callback, responseBody) {
+                response.status(statusCode).send(responseBody);
+                return callback(responseBody, undefined);
+            };
+        },
+
+    _dispatchResponseWithBody = exports.dispatchResponseBody =
+        function (doLog, response, statusCode, responseKeys) {
             'use strict';
             return function requestor(callback, responseValues) {
                 var responseBodyPropertyKeys = Array.isArray(responseKeys) ? responseKeys : [responseKeys],
@@ -23,38 +34,46 @@ var utils = require('./utils'),
                 responseBodyPropertyKeys.map(function (responseBodyPropertyKey, index) {
                     responseBody[responseBodyPropertyKey] = responseBodyPropertyValues[index];
                 });
-                console.log(statusCode + ': ' + JSON.stringify(responseBody));
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
                 response.status(statusCode).send(responseBody);
-                return callback(responseValues);
+                return callback(responseValues, undefined);
             };
         },
 
     _response200Ok = exports.response200Ok =
         function (response) {
             'use strict';
-            return utils.curry(_dispatchResponseWithBody, response, 200);
+            return utils.curry(_dispatchResponseWithBody, false, response, 200);
         },
 
     _response201Created = exports.response201Created =
         function (response) {
             'use strict';
-            return utils.curry(_dispatchResponseWithBody, response, 201);
+            return utils.curry(_dispatchResponseWithBody, false, response, 201);
         },
 
     _response202Accepted = exports.response202Accepted =
         function (response) {
             'use strict';
-            return utils.curry(_dispatchResponseWithBody, response, 202);
+            return utils.curry(_dispatchResponseWithBody, false, response, 202);
         },
 
     _response205ResetContent = exports.response205ResetContent =
         function (response) {
             'use strict';
-            return utils.curry(_dispatchResponseWithBody, response, 205);
+            return utils.curry(_dispatchResponseWithBody, false, response, 205);
         },
 
     _response500InternalServerError = exports.response500InternalServerError =
         function (response) {
             'use strict';
-            return utils.curry(_dispatchResponseWithBody, response, 500);
+            return utils.curry(_dispatchResponseWithBody, false, response, 500);
+        },
+
+    _response501NotImplemented = exports.response501NotImplemented =
+        function (response) {
+            'use strict';
+            return utils.curry(_dispatchResponseWithBody, false, response, 501);
         };

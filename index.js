@@ -6,7 +6,6 @@ var essentials = require('./rq-essentials'),
     mongoose4 = require('./rq-essentials-mongoose4'),
     request = require('./rq-essentials-request');
 
-essentials.dispatchResponseStatusCode = express4.executeAndVerify;
 essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
 essentials.dispatchResponse = express4.dispatchResponse;
 essentials.response200Ok = express4.response200Ok;
@@ -18,6 +17,8 @@ essentials.response500InternalServerError = express4.response500InternalServerEr
 essentials.executeAndVerify = mocha.executeAndVerify;
 
 essentials.mongoose = mongoose4.mongoose;
+essentials.mongooseJson = mongoose4.mongooseJson;
+essentials.mongooseQueryInvocation = mongoose4.mongooseQueryInvocation;
 
 essentials.get = request.get;
 essentials.getEncoded = request.getEncoded;
