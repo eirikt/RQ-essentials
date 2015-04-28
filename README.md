@@ -4,7 +4,7 @@
 &nbsp;
 [![Dependency Status](https://www.versioneye.com/user/projects/5533939210e7149066000fe4/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5533939210e7149066000fe4)
 &nbsp;
-[![Codacy Badge](https://www.codacy.com/project/badge/4f9fda90eb834d27ae6cc2f539ae263c)](https://www.codacy.com/public/eiriktorske/RQ-essentials)
+[![Codacy Badge](https://www.codacy.com/project/badge/317c938385f6499ea0ac392d58d43001)](https://www.codacy.com/app/eiriktorske/RQ-essentials)
 &nbsp;
 [![License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
 
