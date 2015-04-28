@@ -1,9 +1,6 @@
-/* global Array:false, JSON:false, exports:false */
+/* global exports:false, console:false */
 
-var _isArray = Array.isArray,
-    _parse = JSON.parse,
-    _stringify = JSON.stringify,
-
+var
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -24,23 +21,6 @@ var _isArray = Array.isArray,
         function (value) {
             'use strict';
             return value;
-        },
-
-
-    /**
-     * Deep cloning.
-     * Sometimes necessary to clone arguments due to <code>Object.freeze()</code> in RQ.
-     */
-    _clone = exports.clone =
-        function (arg) {
-            'use strict';
-            if (!arg) {
-                return arg;
-            }
-            if (_isArray(arg)) {
-                return arg.slice();
-            }
-            return _parse(_stringify(arg));
         },
 
 
@@ -79,7 +59,7 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _emptyRequestor = exports.null =
+    _emptyRequestor = exports.empty = exports.null =
         function (callback, args) {
             'use strict';
             return callback(null, undefined);
@@ -220,7 +200,7 @@ var _isArray = Array.isArray,
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _identityRequestorize = exports.identity = exports.return = exports.value =
+    _identityFactory = exports.identity = exports.return = exports.value =
         function (value) {
             'use strict';
             return function requestor(callback, args) {
@@ -229,13 +209,34 @@ var _isArray = Array.isArray,
         },
 
 
-    _conditional = exports.conditional = exports.if =
+    _conditionalFactory = exports.condition = exports.if =
         function (condition) {
             'use strict';
             return function requestor(callback, args) {
-                if (condition.call(this, args)) {
+                //if (condition.call(this, args)) {
+                if (condition(args)) {
                     return callback(args, undefined);
                 } else {
+                    return callback(undefined, 'Condition not met');
+                }
+            };
+        },
+
+
+    _instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
+        function (condition, options) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    if (options && options.success) {
+                        console.log(options.name + ': ' + options.success);
+                    }
+                    return callback(args, undefined);
+                }
+                else {
+                    if (options && options.failure) {
+                        console.warn(options.name + ': ' + options.failure);
+                    }
                     return callback(undefined, 'Condition not met');
                 }
             };
@@ -250,7 +251,7 @@ var _isArray = Array.isArray,
      *
      * A typical sequence requestor ...
      */
-    _failFastFunctionRequestorize = exports.requestorize = exports.requestor = exports.then = exports.do =
+    _failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
@@ -268,7 +269,7 @@ var _isArray = Array.isArray,
      *
      * A typical sequence requestor ...
      */
-    _lenientFunctionRequestorize = exports.lenientRequestorize = exports.lenientRequestor =
+    _lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
@@ -281,5 +282,21 @@ var _isArray = Array.isArray,
                     console.error(e.message);
                     return callback(undefined, e);
                 }
+            };
+        },
+
+
+    /**
+     * ...
+     */
+    _cancelFactory = exports.cancel =
+        function (callbackToCancel, logMessage) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (logMessage) {
+                    console.error(logMessage);
+                }
+                callback(args, undefined);
+                return callbackToCancel(undefined, logMessage);
             };
         };

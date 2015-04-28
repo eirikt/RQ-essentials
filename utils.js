@@ -43,6 +43,22 @@ var
     },
 
     /**
+     * Deep cloning.
+     * Sometimes necessary to clone arguments due to occasional <code>Object.freeze()</code> in RQ.
+     */
+    _clone = exports.clone =
+        function (arg) {
+            'use strict';
+            if (!arg) {
+                return arg;
+            }
+            if (_isArray(arg)) {
+                return arg.slice();
+            }
+            return _parse(_stringify(arg));
+        },
+
+    /**
      * @see http://fitzgen.github.com/wu.js/
      */
     _curry = exports.curry = function (fn /* variadic number of args */) {
