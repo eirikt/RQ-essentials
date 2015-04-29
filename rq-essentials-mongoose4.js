@@ -2,7 +2,7 @@
 
 var utils = require('./utils'),
 
-    __mongoose4ModelInvocation = exports.mongoose =
+    _mongoose4ModelInvocation = exports.mongoose =
         function (mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
@@ -18,19 +18,8 @@ var utils = require('./utils'),
 
                         return callback(undefined, err);
                     }
-
-                    //var hasFunctionName = utils.isString(mongooseModelFunction);
-
-                    //if (hasFunctionName) {
-                    //    var jsonResult = {};
-                    //    jsonResult[mongooseModelFunction] = result;
-                    //    console.log('RQ-essentials-mongoose4 :: Function name \'' + mongooseModelFunction + '\', returning JSON result');
-                    //    return callback(jsonResult, undefined);
-
-                    //} else {
                     console.log('RQ-essentials-mongoose4 :: returning raw result (' + result + ')');
                     return callback(result, undefined);
-                    //}
                 });
             };
         },

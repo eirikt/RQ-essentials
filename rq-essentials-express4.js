@@ -1,9 +1,7 @@
-/* global require:false, exports:false, console:false, JSON:false */
+/* global exports:false, console:false, JSON:false */
 
-var utils = require('./utils'),
-
-    _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
-        function (doLog, response, statusCode) {
+var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
+        function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, args) {
                 if (doLog) {
@@ -15,7 +13,7 @@ var utils = require('./utils'),
         },
 
     _dispatchResponse = exports.dispatchResponse =
-        function (doLog, response, statusCode) {
+        function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, responseBody) {
                 response.status(statusCode).send(responseBody);
@@ -24,7 +22,7 @@ var utils = require('./utils'),
         },
 
     _dispatchResponseWithBody = exports.dispatchResponseBody =
-        function (doLog, response, statusCode, responseKeys) {
+        function (doLog, statusCode, responseKeys, response) {
             'use strict';
             return function requestor(callback, responseValues) {
                 var responseBodyPropertyKeys = Array.isArray(responseKeys) ? responseKeys : [responseKeys],
@@ -40,40 +38,42 @@ var utils = require('./utils'),
                 response.status(statusCode).send(responseBody);
                 return callback(responseValues, undefined);
             };
-        },
+        };//,
 
-    _response200Ok = exports.response200Ok =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 200);
-        },
+/*
+ _response200Ok = exports.response200Ok =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 200);
+ },
 
-    _response201Created = exports.response201Created =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 201);
-        },
+ _response201Created = exports.response201Created =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 201);
+ },
 
-    _response202Accepted = exports.response202Accepted =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 202);
-        },
+ _response202Accepted = exports.response202Accepted =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 202);
+ },
 
-    _response205ResetContent = exports.response205ResetContent =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 205);
-        },
+ _response205ResetContent = exports.response205ResetContent =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 205);
+ },
 
-    _response500InternalServerError = exports.response500InternalServerError =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 500);
-        },
+ _response500InternalServerError = exports.response500InternalServerError =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 500);
+ },
 
-    _response501NotImplemented = exports.response501NotImplemented =
-        function (response) {
-            'use strict';
-            return utils.curry(_dispatchResponseWithBody, false, response, 501);
-        };
+ _response501NotImplemented = exports.response501NotImplemented =
+ function (response) {
+ 'use strict';
+ return utils.curry(_dispatchResponseWithBody, false, response, 501);
+ };
+ */
