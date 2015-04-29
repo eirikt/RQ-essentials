@@ -107,7 +107,8 @@ module.exports = function (grunt) {
     grunt.registerTask('doc', ['jsdoc']);
     grunt.registerTask('docs', ['jsdoc']);
 
-    grunt.registerTask('build:travis', ['test', 'lint', 'doc']);
+    grunt.registerTask('build:travis', ['test', 'lint']);
+    grunt.registerTask('build:all', ['test', 'lint', 'doc']);
 
     grunt.registerTask('default', ['help']);
 };

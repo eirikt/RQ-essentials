@@ -38,42 +38,4 @@ var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
                 response.status(statusCode).send(responseBody);
                 return callback(responseValues, undefined);
             };
-        };//,
-
-/*
- _response200Ok = exports.response200Ok =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 200);
- },
-
- _response201Created = exports.response201Created =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 201);
- },
-
- _response202Accepted = exports.response202Accepted =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 202);
- },
-
- _response205ResetContent = exports.response205ResetContent =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 205);
- },
-
- _response500InternalServerError = exports.response500InternalServerError =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 500);
- },
-
- _response501NotImplemented = exports.response501NotImplemented =
- function (response) {
- 'use strict';
- return utils.curry(_dispatchResponseWithBody, false, response, 501);
- };
- */
+        };

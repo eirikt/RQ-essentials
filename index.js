@@ -11,11 +11,6 @@ essentials.doNotLog = false;
 
 essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
 essentials.dispatchResponse = express4.dispatchResponse;
-//essentials.response200Ok = express4.response200Ok;
-//essentials.response201Created = express4.response201Created;
-//essentials.response202Accepted = express4.response202Accepted;
-//essentials.response205ResetContent = express4.response205ResetContent;
-//essentials.response500InternalServerError = express4.response500InternalServerError;
 
 essentials.executeAndVerify = mocha.executeAndVerify;
 

@@ -47,28 +47,10 @@ var utils = require('./utils'),
         },
 
 
-/*
- _mongoose4QueryCallbackFactory =
- function (callback) {
- 'use strict';
- return function mongooseQueryCallback(err, result) {
- if (err) {
- console.error(err);
- return callback(undefined, err);
- }
- return callback(result, undefined);
- };
- },
- */
-
     _mongoose4QueryInvocationFactory = exports.mongooseQueryInvocation =
         function (functionName, conditions) {
             'use strict';
             return function requestor(callback, mongooseQuery) {
-                //var mongooseQueryCallback = _mongoose4QueryCallbackFactory(callback);
-
-                //return mongooseQuery[functionName](conditions, mongooseQueryCallback);
-
                 return mongooseQuery[functionName](conditions, function (err, result) {
                     if (err) {
                         console.error(err);

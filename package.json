@@ -1,6 +1,6 @@
 {
     "name": "RQ-essentials",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Basic/Essential add-ons for Douglas Crockford's RQ",
     "author": "Eirik Torske <eirik.torske@gmail.com>",
     "license": "MIT",
@@ -21,7 +21,7 @@
         "grunt-jsdoc": "0.6.3",
         "grunt-contrib-jshint": "0.11.2",
         "grunt-mocha-test": "0.12.7",
-        "chai": "2.2.0",
+        "chai": "2.3.0",
         "time-grunt": "1.1.1"
     },
     "scripts": {

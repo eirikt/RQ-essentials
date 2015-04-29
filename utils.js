@@ -1,4 +1,4 @@
-/* global exports:false */
+/* global exports:false, JSON:false */
 /* jshint -W121, -W126 */
 
 var
@@ -8,6 +8,8 @@ var
      */
     _slice = Array.prototype.slice,
     _map = Array.prototype.map,
+    _parse = JSON.parse,
+    _stringify = JSON.stringify,
 
     _isString = exports.isString = function (obj) {
         'use strict';
