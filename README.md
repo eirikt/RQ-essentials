@@ -16,9 +16,8 @@ RQ is [not][4] CommonJS compliant.
 
 ### Usage
 
-Usage examples will be added in due course, I guess.
-
-This library will be published to [npm][10], I guess.
+Documentation and usage examples will be added towards v0.1.0.
+Then this library will be published to [npm][10], I guess.
 
 
 ### [License](#license)

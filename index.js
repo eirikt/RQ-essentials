@@ -10,7 +10,8 @@ essentials.doLog = true;
 essentials.doNotLog = false;
 
 essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
-essentials.dispatchResponse = express4.dispatchResponse;
+essentials.dispatchResponseWithScalarBody = express4.dispatchResponseWithScalarBody;
+essentials.dispatchResponseWithJsonBody = express4.dispatchResponseWithJsonBody;
 
 essentials.executeAndVerify = mocha.executeAndVerify;
 

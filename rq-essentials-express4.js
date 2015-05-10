@@ -12,16 +12,19 @@ var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
             };
         },
 
-    _dispatchResponse = exports.dispatchResponse =
+    _dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
         function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, responseBody) {
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
                 response.status(statusCode).send(responseBody);
                 return callback(responseBody, undefined);
             };
         },
 
-    _dispatchResponseWithBody = exports.dispatchResponseBody =
+    _dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
         function (doLog, statusCode, responseKeys, response) {
             'use strict';
             return function requestor(callback, responseValues) {

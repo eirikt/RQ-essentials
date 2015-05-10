@@ -40,7 +40,7 @@ var utils = require('./utils'),
                     }
                     var jsonResult = {};
                     jsonResult[mongooseModelFunctionName] = result;
-                    console.log('RQ-essentials-mongoose4 :: Function name \'' + mongooseModelFunctionName + '\', returning JSON result');
+                    console.log('RQ-essentials-mongoose4 :: Function name \'' + mongooseModelFunctionName + '\', returning JSON result (' + JSON.stringify(jsonResult) + ')');
                     return callback(jsonResult, undefined);
                 });
             };

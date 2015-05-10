@@ -243,6 +243,16 @@ var
         },
 
 
+    _arbitraryFunctionExecutor = exports.exec =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                g();
+                return callback(args, undefined);
+            };
+        },
+
+
     /**
      * The primary requestor factory:
      * <pre>
@@ -293,10 +303,12 @@ var
         function (callbackToCancel, logMessage) {
             'use strict';
             return function requestor(callback, args) {
+                callback(args, undefined);
                 if (logMessage) {
                     console.error(logMessage);
+                    return callbackToCancel(undefined, logMessage);
+                } else {
+                    return callbackToCancel(undefined, 'Callback cancelled');
                 }
-                callback(args, undefined);
-                return callbackToCancel(undefined, logMessage);
             };
         };
