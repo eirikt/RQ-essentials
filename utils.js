@@ -41,7 +41,7 @@ var
      */
     toArray = exports.toArray = function (x) {
         'use strict';
-        return _slice.call(x);
+        return slice.call(x);
     },
 
     /**
@@ -54,10 +54,10 @@ var
             if (!arg) {
                 return arg;
             }
-            if (_isArray(arg)) {
+            if (isArray(arg)) {
                 return arg.slice();
             }
-            return _parse(_stringify(arg));
+            return parse(stringify(arg));
         },
 
     /**
@@ -65,9 +65,9 @@ var
      */
     curry = exports.curry = function (fn /* variadic number of args */) {
         'use strict';
-        var args = _slice.call(arguments, 1);
+        var args = slice.call(arguments, 1);
         return function () {
-            return fn.apply(this, args.concat(_toArray(arguments)));
+            return fn.apply(this, args.concat(toArray(arguments)));
         };
     },
 
@@ -80,8 +80,8 @@ var
         var f = function () {
             if (arguments.length < numArgs) {
                 return numArgs - arguments.length > 0 ?
-                    _autoCurry(_curry.apply(this, [fn].concat(_toArray(arguments))), numArgs - arguments.length) :
-                    _curry.apply(this, [fn].concat(_toArray(arguments)));
+                    autoCurry(curry.apply(this, [fn].concat(toArray(arguments))), numArgs - arguments.length) :
+                    curry.apply(this, [fn].concat(toArray(arguments)));
             }
             return fn.apply(this, arguments);
         };
@@ -98,6 +98,6 @@ var
     decorateFunctionPrototypeWithAutoCurry = (function () {
         'use strict';
         Function.prototype.autoCurry = function (n) {
-            return _autoCurry(this, n);
+            return autoCurry(this, n);
         };
     })();
