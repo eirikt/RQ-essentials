@@ -17,7 +17,7 @@ var
      * @param {*} value the argument
      * @return {*} the given argument
      */
-    _identity = exports.identity = exports.execute = exports.go =
+    identity = exports.identity = exports.execute = exports.go =
         function (value) {
             'use strict';
             return value;
@@ -35,15 +35,31 @@ var
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * <p>
      * The requestor version of "the null function":
      * <pre>
      *     f(callback, x) = callback(undefined)
      * </pre>
-     *
+     * </p>
+     * <p>
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
+     * </p>
+     * <p>
+     * Usage example, <code>undefined</code> as argument to <code>myNextRequestor</code>:
+     * <pre>
+     *     var RQ = ('async-rq');
+     *     var rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.undefined,
+     *         myNextRequestor,
+     *         ...
+     *     ])
+     * </pre>
+     * </p>
      */
-    _nullRequestor = exports.undefined =
+    nullRequestor = exports.undefined =
         function (callback, args) {
             'use strict';
             return callback(undefined, undefined);
@@ -59,7 +75,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _emptyRequestor = exports.empty = exports.null =
+    emptyRequestor = exports.empty = exports.null =
         function (callback, args) {
             'use strict';
             return callback(null, undefined);
@@ -75,7 +91,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _tautologyRequestor = exports.true =
+    tautologyRequestor = exports.true =
         function (callback, args) {
             'use strict';
             return callback(true, undefined);
@@ -91,7 +107,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _contradictionRequestor = exports.false =
+    contradictionRequestor = exports.false =
         function (callback, args) {
             'use strict';
             return callback(false, undefined);
@@ -108,7 +124,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _timestampRequestor = exports.timestamp = exports.now =
+    timestampRequestor = exports.timestamp = exports.now =
         function (callback, args) {
             'use strict';
             return callback(Date.now(), undefined);
@@ -124,7 +140,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _dateRequestor = exports.date =
+    dateRequestor = exports.date =
         function (callback, args) {
             'use strict';
             return callback(new Date(), undefined);
@@ -139,10 +155,17 @@ var
      *
      * Just pass things along without doing anything ...
      */
-    _noopRequestor = exports.noop =
+    noopRequestor = exports.noop =
         function (callback, args) {
             'use strict';
             return callback(args, undefined);
+        },
+
+
+    notImplemented = exports.notImplemented =
+        function (callback, args) {
+            'use strict';
+            throw new Error('Not yet implemented');
         },
 
 
@@ -161,8 +184,10 @@ var
      *
      * This is the curry-friendly version of the primary requestor factory below (with the alias 'then').
      * Especially handy when you have to curry the callback, e.g. when terminating nested requestor pipelines.
+     *
      */
-    _terminatorRequestor = exports.terminator =
+    // TODO: Do not feel I am quite on top of this one ... What is it really!?
+    terminatorRequestor = exports.terminator =
         function (g, callback, args) {
             'use strict';
             return callback(g(args), undefined);
@@ -176,7 +201,8 @@ var
      *
      * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
      */
-    _interceptorRequestor = exports.interceptor =
+        // TODO: Do not feel I am quite on top of this one ... What is it really!?
+    interceptorRequestor = exports.interceptor =
         function (g, y, callback, args) {
             'use strict';
 
@@ -200,7 +226,7 @@ var
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
      */
-    _identityFactory = exports.identity = exports.return = exports.value =
+    identityFactory = exports.return = exports.value =
         function (value) {
             'use strict';
             return function requestor(callback, args) {
@@ -209,7 +235,7 @@ var
         },
 
 
-    _conditionalFactory = exports.condition = exports.if =
+    conditionalFactory = exports.condition = exports.if =
         function (condition) {
             'use strict';
             return function requestor(callback, args) {
@@ -223,7 +249,7 @@ var
         },
 
 
-    _instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
+    instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
         function (condition, options) {
             'use strict';
             return function requestor(callback, args) {
@@ -243,7 +269,7 @@ var
         },
 
 
-    _arbitraryFunctionExecutor = exports.exec =
+    arbitraryFunctionExecutor = exports.exec =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
@@ -261,11 +287,20 @@ var
      *
      * A typical sequence requestor ...
      */
-    _failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
+    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
                 return callback(g(args), undefined);
+            };
+        },
+
+    terminator2Requestor = exports.terminator2 =
+        function (callback, args) {
+            'use strict';
+            return function (callback2, args2) {
+                callback(args, undefined);
+                return callback2(args2, undefined);
             };
         },
 
@@ -279,7 +314,7 @@ var
      *
      * A typical sequence requestor ...
      */
-    _lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
+    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
@@ -299,7 +334,7 @@ var
     /**
      * ...
      */
-    _cancelFactory = exports.cancel =
+    cancelFactory = exports.cancel =
         function (callbackToCancel, logMessage) {
             'use strict';
             return function requestor(callback, args) {

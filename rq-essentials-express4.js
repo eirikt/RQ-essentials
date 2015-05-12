@@ -1,6 +1,6 @@
 /* global exports:false, console:false, JSON:false */
 
-var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
+var dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
         function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, args) {
@@ -12,7 +12,7 @@ var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
             };
         },
 
-    _dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
+    dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
         function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, responseBody) {
@@ -24,7 +24,7 @@ var _dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
             };
         },
 
-    _dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
+    dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
         function (doLog, statusCode, responseKeys, response) {
             'use strict';
             return function requestor(callback, responseValues) {

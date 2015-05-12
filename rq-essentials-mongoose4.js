@@ -2,7 +2,7 @@
 
 var utils = require('./utils'),
 
-    _mongoose4ModelInvocation = exports.mongoose =
+    mongoose4ModelInvocation = exports.mongoose =
         function (mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
@@ -25,7 +25,7 @@ var utils = require('./utils'),
         },
 
 
-    _mongoose4ModelInvocationJson = exports.mongooseJson =
+    mongoose4ModelInvocationJson = exports.mongooseJson =
         function (mongooseModel, mongooseModelFunctionName, conditions) {
             'use strict';
             if (!utils.isString(mongooseModelFunctionName)) {
@@ -47,7 +47,7 @@ var utils = require('./utils'),
         },
 
 
-    _mongoose4QueryInvocationFactory = exports.mongooseQueryInvocation =
+    mongoose4QueryInvocationFactory = exports.mongooseQueryInvocation =
         function (functionName, conditions) {
             'use strict';
             return function requestor(callback, mongooseQuery) {

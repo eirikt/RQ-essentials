@@ -6,32 +6,32 @@ var
      * Local reference for faster look-up
      * @see https://github.com/loop-recur/FunctionalJS/blob/master/functional.js/
      */
-    _slice = Array.prototype.slice,
-    _map = Array.prototype.map,
-    _parse = JSON.parse,
-    _stringify = JSON.stringify,
+    slice = Array.prototype.slice,
+    map = Array.prototype.map,
+    parse = JSON.parse,
+    stringify = JSON.stringify,
 
-    _isString = exports.isString = function (obj) {
+    isString = exports.isString = function (obj) {
         'use strict';
         return typeof obj === 'string' || obj instanceof String;
     },
 
-    _isNumber = exports.isNumber = function (obj) {
+    isNumber = exports.isNumber = function (obj) {
         'use strict';
         throw new Error('not yet implemented');
     },
 
-    _isDate = exports.isDate = function (obj) {
+    isDate = exports.isDate = function (obj) {
         'use strict';
         throw new Error('not yet implemented');
     },
 
-    _isFunction = exports.isFunction = function (obj) {
+    isFunction = exports.isFunction = function (obj) {
         'use strict';
         return obj && Object.prototype.toString.call(obj) === '[object Function]';
     },
 
-    _isArray = exports.isArray = Array.isArray || function (obj) {
+    isArray = exports.isArray = Array.isArray || function (obj) {
             'use strict';
             return Object.prototype.toString.call(obj) === '[object Array]';
         },
@@ -39,7 +39,7 @@ var
     /**
      * @see https://github.com/loop-recur/FunctionalJS/blob/master/functional.js/
      */
-    _toArray = exports.toArray = function (x) {
+    toArray = exports.toArray = function (x) {
         'use strict';
         return _slice.call(x);
     },
@@ -48,7 +48,7 @@ var
      * Deep cloning.
      * Sometimes necessary to clone arguments due to occasional <code>Object.freeze()</code> in RQ.
      */
-    _clone = exports.clone =
+    clone = exports.clone =
         function (arg) {
             'use strict';
             if (!arg) {
@@ -63,7 +63,7 @@ var
     /**
      * @see http://fitzgen.github.com/wu.js/
      */
-    _curry = exports.curry = function (fn /* variadic number of args */) {
+    curry = exports.curry = function (fn /* variadic number of args */) {
         'use strict';
         var args = _slice.call(arguments, 1);
         return function () {
@@ -74,7 +74,7 @@ var
     /**
      * @see http://fitzgen.github.com/wu.js/
      */
-    _autoCurry = exports.autoCurry = function (fn, numArgs) {
+    autoCurry = exports.autoCurry = function (fn, numArgs) {
         'use strict';
         numArgs = numArgs || fn.length;
         var f = function () {
@@ -95,7 +95,7 @@ var
     /**
      * @see https://github.com/loop-recur/FunctionalJS/blob/master/functional.js/
      */
-    _decorateFunctionPrototypeWithAutoCurry = (function () {
+    decorateFunctionPrototypeWithAutoCurry = (function () {
         'use strict';
         Function.prototype.autoCurry = function (n) {
             return _autoCurry(this, n);
