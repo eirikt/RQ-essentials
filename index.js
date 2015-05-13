@@ -1,7 +1,7 @@
 /* global require:false, module:false */
 
 var essentials = require('./rq-essentials'),
-    cache = require('./rq-essentials-cache'),
+    caching = require('./rq-essentials-caching'),
     express4 = require('./rq-essentials-express4'),
     mocha = require('./rq-essentials-mocha'),
     mongoose4 = require('./rq-essentials-mongoose4'),
@@ -10,8 +10,12 @@ var essentials = require('./rq-essentials'),
 essentials.doLog = true;
 essentials.doNotLog = false;
 
-essentials.cacheWrite = cache.cacheWrite;
-essentials.cacheRead = cache.cacheRead;
+essentials.cacheWrite = caching.cacheWrite;
+essentials.cacheRead = caching.cacheRead;
+essentials.push = caching.push;
+essentials.pop = caching.pop;
+essentials._getStack = caching._getStack;
+essentials._resetStack = caching._resetStack;
 
 essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
 essentials.dispatchResponseWithScalarBody = express4.dispatchResponseWithScalarBody;
