@@ -1,4 +1,32 @@
-/* global exports:false, console:false */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: rq-essentials.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: rq-essentials.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global exports:false, console:false */
 
 var
 
@@ -7,34 +35,34 @@ var
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     * <p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
      * The identity function:
-     * <pre>
+     * &lt;pre>
      *     f(x) = x
-     * </pre>
-     * </p>
-     * <p>
-     * <em>Aliases</em>
-     * </p>
-     * <p>
-     * <ul>
-     *     <li><code>execute</code></li>
-     *     <li><code>run</code></li>
-     *     <li><code>go</code></li>
-     * </ul>
-     * </p>
-     * <p
-     * <p>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;em>Aliases&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;ul>
+     *     &lt;li>&lt;code>execute&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>run&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>go&lt;/code>&lt;/li>
+     * &lt;/ul>
+     * &lt;/p>
+     * &lt;p
+     * &lt;p>
      * Convenient for triggering execution of RQ requestor chains.
-     * </p>
+     * &lt;/p>
      * ...
-     * <p>
-     * <em>Usage examples</em>
-     * </p>
-     * <p>
+     * &lt;p>
+     * &lt;em>Usage examples&lt;/em>
+     * &lt;/p>
+     * &lt;p>
      * Convenient for triggering execution of RQ requestor chains:
-     * <pre>
+     * &lt;pre>
      *     var RQ = ('async-rq'),
      *         rq = ('rq-essentials'),
      *         run = rq.run;
@@ -44,9 +72,9 @@ var
      *         myNextRequestor,
      *         ...
      *     ])(run)
-     * </pre>
-     * </p>
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>'
      *
      * @function
      * @param {*} value the argument that will be returned
@@ -69,24 +97,24 @@ var
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     * <p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
      * The requestor version of "the null function":
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(undefined)
-     * </pre>
-     * </p>
-     * <p>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;p>
      * A "data generator" requestor => No forwarding of incoming arguments/data.
      * A typical parallel requestor, or as a starting requestor in a sequence.
-     * </p>
+     * &lt;/p>
      * ...
-     * <p>
-     * <em>Usage examples</em>
-     * </p>
-     * <p>
-     * <code>undefined</code> as argument to <code>myNextRequestor</code>:
-     * <pre>
+     * &lt;p>
+     * &lt;em>Usage examples&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;code>undefined&lt;/code> as argument to &lt;code>myNextRequestor&lt;/code>:
+     * &lt;pre>
      *     var RQ = ('async-rq');
      *     var rq = ('rq-essentials');
      *
@@ -95,9 +123,9 @@ var
      *         myNextRequestor,
      *         ...
      *     ])
-     * </pre>
-     * </p>
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
      */
@@ -110,9 +138,9 @@ var
 
     /**
      * The requestor version of "the empty function":
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(null)
-     * </pre>
+     * &lt;/pre>
      */
     emptyRequestor = exports.empty = exports.null =
         function (callback, args) {
@@ -123,9 +151,9 @@ var
 
     /**
      * The tautology requestor:
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(true)
-     * </pre>
+     * &lt;/pre>
      */
     tautologyRequestor = exports.true =
         function (callback, args) {
@@ -136,9 +164,9 @@ var
 
     /**
      * The contradiction requestor:
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(false)
-     * </pre>
+     * &lt;/pre>
      */
     contradictionRequestor = exports.false =
         function (callback, args) {
@@ -149,10 +177,10 @@ var
 
     /**
      * The UNIX timestamp requestor:
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(Date.now())
-     * </pre>
-     * Returning <code>Date.now()</code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
+     * &lt;/pre>
+     * Returning &lt;code>Date.now()&lt;/code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
      */
     timestampRequestor = exports.timestamp = exports.now =
         function (callback, args) {
@@ -163,9 +191,9 @@ var
 
     /**
      * The "new Date()" requestor:
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(new Date())
-     * </pre>
+     * &lt;/pre>
      */
     dateRequestor = exports.date =
         function (callback, args) {
@@ -176,9 +204,9 @@ var
 
     /**
      * The NOP/NOOP requestor:
-     * <pre>
+     * &lt;pre>
      *     f(callback, x) = callback(x)
-     * </pre>
+     * &lt;/pre>
      *
      * Just pass things along without doing anything ...
      */
@@ -190,7 +218,7 @@ var
 
 
     /**
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * @function
      * @type {Function}
      * @param {*} value the argument that will be returned
@@ -212,9 +240,9 @@ var
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * <pre>
+     * &lt;pre>
      *     f(g, callback, x) = callback(g(x))
-     * </pre>
+     * &lt;/pre>
      *
      * This is the curry-friendly version of the primary requestor factory below (with the alias 'then').
      * Especially handy when you have to curry the callback, e.g. when terminating nested requestor pipelines.
@@ -229,9 +257,9 @@ var
 
 
     /**
-     * <pre>
+     * &lt;pre>
      *     f(g, y, callback, x) = callback(g(y))
-     * </pre>
+     * &lt;/pre>
      *
      * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
      */
@@ -254,9 +282,9 @@ var
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * <pre>
+     * &lt;pre>
      *     f(x) = F(callback(x))
-     * </pre>
+     * &lt;/pre>
      *
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
@@ -294,13 +322,13 @@ var
             'use strict';
             return function requestor(callback, args) {
                 if (condition.call(this, args)) {
-                    if (options && options.success) {
+                    if (options &amp;&amp; options.success) {
                         console.log(options.name + ': ' + options.success);
                     }
                     return callback(args, undefined);
                 }
                 else {
-                    if (options && options.failure) {
+                    if (options &amp;&amp; options.failure) {
                         console.warn(options.name + ': ' + options.failure);
                     }
                     return callback(undefined, 'Condition not met');
@@ -310,15 +338,15 @@ var
 
 
     /**
-     * <p>
+     * &lt;p>
      * Execution of arbitrary function:
-     * <pre>
+     * &lt;pre>
      *     f(g) = g(); F(callback(x))
-     * </pre>
-     * </p>
-     * <p>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;p>
      * The given function will be executed isolated from the requestor argument passing.
-     * </p>
+     * &lt;/p>
      */
     arbitraryFunctionExecutorFactory = exports.exec = exports.terminate =
         function (g) {
@@ -331,15 +359,15 @@ var
 
 
     /**
-     * <p>
+     * &lt;p>
      * Simple interceptor for execution of arbitrary function and argument:
-     * <pre>
+     * &lt;pre>
      *     f(g, y) = g(y); F(callback(x))
-     * </pre>
-     * </p>
-     * <p>
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;p>
      * The given function will be executed isolated from the requestor argument passing.
-     * </p>
+     * &lt;/p>
      */
     arbitraryFunctionAndArgumentExecutorFactory = exports.execArgs = exports.terminateArgs =
         function (g, y) {
@@ -353,9 +381,9 @@ var
 
     /**
      * The primary requestor factory:
-     * <pre>
+     * &lt;pre>
      *     f(g) = F(callback(g(x)))
-     * </pre>
+     * &lt;/pre>
      *
      * A typical sequence requestor ...
      */
@@ -370,11 +398,11 @@ var
 
 
 /**
- * <p>
- * <pre>
+ * &lt;p>
+ * &lt;pre>
  *     f(g, y) = g(y); F(callback(x))
- * </pre>
- * </p>
+ * &lt;/pre>
+ * &lt;/p>
  */
 // Same as arbitraryFunctionExecutorFactory above ...
 //terminatorRequestorFactory = exports.terminate =
@@ -390,9 +418,9 @@ var
 
     /**
      * The more lenient requestor factory:
-     * <pre>
+     * &lt;pre>
      *     f(g) = F(callback(g(x)))
-     * </pre>
+     * &lt;/pre>
      * Catching exceptions, logging them, and terminating execution of requestors.
      *
      * A typical sequence requestor ...
@@ -430,3 +458,26 @@ var
                 }
             };
         };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#autoCurry">autoCurry</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#cancelFactory">cancelFactory</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#conditionalFactory">conditionalFactory</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#decorateFunctionPrototypeWithAutoCurry">decorateFunctionPrototypeWithAutoCurry</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#failFastFunctionFactory">failFastFunctionFactory</a></li><li><a href="global.html#getRequestorizer">getRequestorizer</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#instrumentedConditionalFactory">instrumentedConditionalFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientFunctionFactory">lenientFunctionFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#nullRequestor">nullRequestor</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu May 14 2015 08:51:47 GMT+0200 (W. Europe Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

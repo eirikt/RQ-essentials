@@ -90,7 +90,8 @@ module.exports = function (grunt) {
             dist: {
                 src: ['*.js'],
                 options: {
-                    destination: 'docs'
+                    destination: 'docs',
+                    private: false
                 }
             }
         }
