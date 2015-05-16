@@ -1,6 +1,12 @@
 /* global exports:false, console:false, JSON:false */
 
-var dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
+var
+
+// TODO: Document ...
+    /**
+     * ...
+     */
+    dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
         function (doLog, statusCode, response) {
             'use strict';
             return function requestor(callback, args) {
@@ -12,6 +18,11 @@ var dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
             };
         },
 
+
+// TODO: Document ...
+    /**
+     * Include the complete requestor argument as response body as is.
+     */
     dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
         function (doLog, statusCode, response) {
             'use strict';
@@ -24,6 +35,30 @@ var dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
             };
         },
 
+
+// TODO: Document ...
+    /**
+     * Include the given properties (stated in "responseKeys" array) only,
+     * picked from the requestor argument ("responseValues" object) as response body.
+     */
+    dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
+        function (doLog, statusCode, responseKeys, response) {
+            'use strict';
+            return function requestor(callback, responseValues) {
+                var responseBodyPropertyKeys = Array.isArray(responseKeys) ? responseKeys : [responseKeys],
+                    responseBody = {};
+
+                responseBodyPropertyKeys.map(function (responseBodyPropertyKey) {
+                    responseBody[responseBodyPropertyKey] = responseValues[responseBodyPropertyKey];
+                });
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                response.status(statusCode).send(responseBody);
+                return callback(responseValues, undefined);
+            };
+        };
+    /* OLD ...
     dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
         function (doLog, statusCode, responseKeys, response) {
             'use strict';
@@ -42,3 +77,4 @@ var dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
                 return callback(responseValues, undefined);
             };
         };
+    */

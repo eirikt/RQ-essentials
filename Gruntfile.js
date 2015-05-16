@@ -80,8 +80,8 @@ module.exports = function (grunt) {
 
                 maxcomplexity: 4,
                 maxdepth: 4,
-                maxlen: 180,
-                maxparams: 4,
+                maxlen: 250,        // I have a laarge screen ...
+                maxparams: 8,      // I loove currying ...
                 maxstatements: 30   // Default: ...
             }
         },

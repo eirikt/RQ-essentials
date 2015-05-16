@@ -1,6 +1,6 @@
 {
     "name": "RQ-essentials",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "Basic/Essential add-ons for Douglas Crockford's RQ",
     "author": "Eirik Torske <eirik.torske@gmail.com>",
     "license": "MIT",
@@ -11,9 +11,7 @@
     },
     "dependencies": {
         "async-rq": "~0.0.1",
-        "mongodb": "~2.0.30",
-        "mongoose": "~4.0.2",
-        "express": "~4.12.3",
+        "underscore": "~1.8.3",
         "request": "~2.55.0",
         "iconv-lite": "~0.4.8"
     },

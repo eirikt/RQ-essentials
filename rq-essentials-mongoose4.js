@@ -1,12 +1,12 @@
 /* global require:false, exports:false, console:false, JSON:false */
 
-var utils = require('./utils'),
+var __ = require('underscore'),
 
     mongoose4ModelInvocation = exports.mongoose =
         function (mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
-            var func = utils.isString(mongooseModelFunction) ?
+            var func = __.isString(mongooseModelFunction) ?
                 mongooseModel[mongooseModelFunction] :
                 mongooseModelFunction;
 
@@ -28,7 +28,7 @@ var utils = require('./utils'),
     mongoose4ModelInvocationJson = exports.mongooseJson =
         function (mongooseModel, mongooseModelFunctionName, conditions) {
             'use strict';
-            if (!utils.isString(mongooseModelFunctionName)) {
+            if (!__.isString(mongooseModelFunctionName)) {
                 throw new Error('RQ-essentials-mongoose4 :: mongooseJson, second argument must be a String!');
             }
             var func = mongooseModel[mongooseModelFunctionName];

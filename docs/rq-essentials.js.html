@@ -26,9 +26,9 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global exports:false, console:false */
+            <pre class="prettyprint source linenums"><code>/* global require:false, exports:false, console:false */
 
-var
+var __ = require('underscore'),
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -74,7 +74,7 @@ var
      *     ])(run)
      * &lt;/pre>
      * &lt;/p>
-     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>'
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
      * @param {*} value the argument that will be returned
@@ -279,21 +279,85 @@ var
 // Requestor factories
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
+//
+// "Data generator requestors",
+// ignoring incoming arguments and passes along their own original arguments.
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * &lt;p>
      * &lt;pre>
      *     f(x) = F(callback(x))
      * &lt;/pre>
-     *
+     * or
+     * &lt;pre>
+     *     f(x) = F(callback(x()))
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;p>
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
+     * &lt;/p>
      */
     identityFactory = exports.return = exports.value =
-        function (value) {
+        function (valueOrFunc) {
             'use strict';
             return function requestor(callback, args) {
-                return callback(value, undefined);
+                var retVal = __.isFunction(valueOrFunc) ? valueOrFunc.call(this) : valueOrFunc;
+                return callback(retVal, undefined);
+            };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// "Data manipulator requestors",
+// takes incoming arguments, manipulates them, and passes them along.
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The primary requestor factory:
+     * &lt;pre>
+     *     f(g) = F(callback(g(x)))
+     * &lt;/pre>
+     *
+     * A typical sequence requestor ...
+     */
+        // TODO: To be a pure function, the arguments have to be cloned/not mutated!
+    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                return callback(g(args), undefined);
+            };
+        },
+
+
+    /**
+     * The more lenient requestor factory:
+     * &lt;pre>
+     *     f(g) = F(callback(g(x)))
+     * &lt;/pre>
+     * Catching exceptions, logging them, and terminating execution of requestors.
+     *
+     * A typical sequence requestor ...
+     */
+    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                var result;
+                try {
+                    result = g(args);
+                    return callback(result, undefined);
+
+                } catch (e) {
+                    console.error(e.message);
+                    return callback(undefined, e);
+                }
             };
         },
 
@@ -301,40 +365,25 @@ var
     /**
      * ...
      */
-    conditionalFactory = exports.condition = exports.if =
-        function (condition) {
+    propertyPickerFactory = exports.pick =
+        function (propertyName) {
             'use strict';
             return function requestor(callback, args) {
-                if (condition.call(this, args)) {
-                    return callback(args, undefined);
-                } else {
-                    return callback(undefined, 'Condition not met');
-                }
+                var propertyValue = args[propertyName],
+                    retVal = __.isFunction(propertyValue) ? propertyValue.call(this) : propertyValue;
+                return callback(retVal, undefined);
             };
         },
 
 
-    /**
-     * ...
-     */
-    instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
-        function (condition, options) {
-            'use strict';
-            return function requestor(callback, args) {
-                if (condition.call(this, args)) {
-                    if (options &amp;&amp; options.success) {
-                        console.log(options.name + ': ' + options.success);
-                    }
-                    return callback(args, undefined);
-                }
-                else {
-                    if (options &amp;&amp; options.failure) {
-                        console.warn(options.name + ': ' + options.failure);
-                    }
-                    return callback(undefined, 'Condition not met');
-                }
-            };
-        },
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// "Data ignoring requestors",
+// ignores incoming arguments, does other stuff, causes various side-effects.
+///////////////////////////////////////////////////////////////////////////////
 
 
     /**
@@ -379,24 +428,6 @@ var
         },
 
 
-    /**
-     * The primary requestor factory:
-     * &lt;pre>
-     *     f(g) = F(callback(g(x)))
-     * &lt;/pre>
-     *
-     * A typical sequence requestor ...
-     */
-        // TODO: To be a pure function, the arguments have to be cloned/not mutated
-    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
-        function (g) {
-            'use strict';
-            return function requestor(callback, args) {
-                return callback(g(args), undefined);
-            };
-        },
-
-
 /**
  * &lt;p>
  * &lt;pre>
@@ -417,26 +448,60 @@ var
 
 
     /**
-     * The more lenient requestor factory:
-     * &lt;pre>
-     *     f(g) = F(callback(g(x)))
-     * &lt;/pre>
-     * Catching exceptions, logging them, and terminating execution of requestors.
-     *
-     * A typical sequence requestor ...
+     * Nice for stubbing requestor factories in tests.
      */
-    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
-        function (g) {
+    noopFactory = exports.noopFactory =
+        function () {
             'use strict';
             return function requestor(callback, args) {
-                var result;
-                try {
-                    result = g(args);
-                    return callback(result, undefined);
+                return callback(args, undefined);
+            };
+        },
 
-                } catch (e) {
-                    console.error(e.message);
-                    return callback(undefined, e);
+
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// Other requestors,
+// conditional execution, canellers, and such.
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * ...
+     */
+    conditionalFactory = exports.condition = exports.if =
+        function (condition) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    return callback(args, undefined);
+                } else {
+                    return callback(undefined, 'Condition not met');
+                }
+            };
+        },
+
+
+    /**
+     * ...
+     */
+    instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
+        function (condition, options) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    if (options &amp;&amp; options.success) {
+                        console.log(options.name + ': ' + options.success);
+                    }
+                    return callback(args, undefined);
+                }
+                else {
+                    if (options &amp;&amp; options.failure) {
+                        console.warn(options.name + ': ' + options.failure);
+                    }
+                    return callback(undefined, 'Condition not met');
                 }
             };
         },
@@ -457,6 +522,18 @@ var
                     return callbackToCancel(undefined, 'Callback cancelled');
                 }
             };
+        },
+
+
+    /**
+     * ...
+     */
+    errorFactory = exports.error =
+        function (errorMessage) {
+            'use strict';
+            return function requestor(callback, args) {
+                throw new Error(errorMessage);
+            };
         };
 </code></pre>
         </article>
@@ -468,13 +545,13 @@ var
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#autoCurry">autoCurry</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#cancelFactory">cancelFactory</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#conditionalFactory">conditionalFactory</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#decorateFunctionPrototypeWithAutoCurry">decorateFunctionPrototypeWithAutoCurry</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#failFastFunctionFactory">failFastFunctionFactory</a></li><li><a href="global.html#getRequestorizer">getRequestorizer</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#instrumentedConditionalFactory">instrumentedConditionalFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientFunctionFactory">lenientFunctionFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#nullRequestor">nullRequestor</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#cancelFactory">cancelFactory</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#conditionalFactory">conditionalFactory</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#errorFactory">errorFactory</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#failFastFunctionFactory">failFastFunctionFactory</a></li><li><a href="global.html#getRequestorizer">getRequestorizer</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#instrumentedConditionalFactory">instrumentedConditionalFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientFunctionFactory">lenientFunctionFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#nullRequestor">nullRequestor</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu May 14 2015 08:51:47 GMT+0200 (W. Europe Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Sat May 16 2015 17:44:15 GMT+0200 (W. Europe Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

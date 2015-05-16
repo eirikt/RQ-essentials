@@ -1,6 +1,6 @@
-/* global exports:false, console:false */
+/* global require:false, exports:false, console:false */
 
-var
+var __ = require('underscore'),
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -251,21 +251,85 @@ var
 // Requestor factories
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
+//
+// "Data generator requestors",
+// ignoring incoming arguments and passes along their own original arguments.
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * <p>
      * <pre>
      *     f(x) = F(callback(x))
      * </pre>
-     *
+     * or
+     * <pre>
+     *     f(x) = F(callback(x()))
+     * </pre>
+     * </p>
+     * <p>
      * A "data generator" requestor => No forwarding of existing data.
      * A typical parallel requestor, or as a starting requestor in a sequence ...
+     * </p>
      */
     identityFactory = exports.return = exports.value =
-        function (value) {
+        function (valueOrFunc) {
             'use strict';
             return function requestor(callback, args) {
-                return callback(value, undefined);
+                var retVal = __.isFunction(valueOrFunc) ? valueOrFunc.call(this) : valueOrFunc;
+                return callback(retVal, undefined);
+            };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// "Data manipulator requestors",
+// takes incoming arguments, manipulates them, and passes them along.
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The primary requestor factory:
+     * <pre>
+     *     f(g) = F(callback(g(x)))
+     * </pre>
+     *
+     * A typical sequence requestor ...
+     */
+        // TODO: To be a pure function, the arguments have to be cloned/not mutated!
+    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                return callback(g(args), undefined);
+            };
+        },
+
+
+    /**
+     * The more lenient requestor factory:
+     * <pre>
+     *     f(g) = F(callback(g(x)))
+     * </pre>
+     * Catching exceptions, logging them, and terminating execution of requestors.
+     *
+     * A typical sequence requestor ...
+     */
+    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
+        function (g) {
+            'use strict';
+            return function requestor(callback, args) {
+                var result;
+                try {
+                    result = g(args);
+                    return callback(result, undefined);
+
+                } catch (e) {
+                    console.error(e.message);
+                    return callback(undefined, e);
+                }
             };
         },
 
@@ -273,40 +337,25 @@ var
     /**
      * ...
      */
-    conditionalFactory = exports.condition = exports.if =
-        function (condition) {
+    propertyPickerFactory = exports.pick =
+        function (propertyName) {
             'use strict';
             return function requestor(callback, args) {
-                if (condition.call(this, args)) {
-                    return callback(args, undefined);
-                } else {
-                    return callback(undefined, 'Condition not met');
-                }
+                var propertyValue = args[propertyName],
+                    retVal = __.isFunction(propertyValue) ? propertyValue.call(this) : propertyValue;
+                return callback(retVal, undefined);
             };
         },
 
 
-    /**
-     * ...
-     */
-    instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
-        function (condition, options) {
-            'use strict';
-            return function requestor(callback, args) {
-                if (condition.call(this, args)) {
-                    if (options && options.success) {
-                        console.log(options.name + ': ' + options.success);
-                    }
-                    return callback(args, undefined);
-                }
-                else {
-                    if (options && options.failure) {
-                        console.warn(options.name + ': ' + options.failure);
-                    }
-                    return callback(undefined, 'Condition not met');
-                }
-            };
-        },
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// "Data ignoring requestors",
+// ignores incoming arguments, does other stuff, causes various side-effects.
+///////////////////////////////////////////////////////////////////////////////
 
 
     /**
@@ -351,24 +400,6 @@ var
         },
 
 
-    /**
-     * The primary requestor factory:
-     * <pre>
-     *     f(g) = F(callback(g(x)))
-     * </pre>
-     *
-     * A typical sequence requestor ...
-     */
-        // TODO: To be a pure function, the arguments have to be cloned/not mutated
-    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
-        function (g) {
-            'use strict';
-            return function requestor(callback, args) {
-                return callback(g(args), undefined);
-            };
-        },
-
-
 /**
  * <p>
  * <pre>
@@ -389,26 +420,60 @@ var
 
 
     /**
-     * The more lenient requestor factory:
-     * <pre>
-     *     f(g) = F(callback(g(x)))
-     * </pre>
-     * Catching exceptions, logging them, and terminating execution of requestors.
-     *
-     * A typical sequence requestor ...
+     * Nice for stubbing requestor factories in tests.
      */
-    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
-        function (g) {
+    noopFactory = exports.noopFactory =
+        function () {
             'use strict';
             return function requestor(callback, args) {
-                var result;
-                try {
-                    result = g(args);
-                    return callback(result, undefined);
+                return callback(args, undefined);
+            };
+        },
 
-                } catch (e) {
-                    console.error(e.message);
-                    return callback(undefined, e);
+
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// Other requestors,
+// conditional execution, canellers, and such.
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * ...
+     */
+    conditionalFactory = exports.condition = exports.if =
+        function (condition) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    return callback(args, undefined);
+                } else {
+                    return callback(undefined, 'Condition not met');
+                }
+            };
+        },
+
+
+    /**
+     * ...
+     */
+    instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
+        function (condition, options) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (condition.call(this, args)) {
+                    if (options && options.success) {
+                        console.log(options.name + ': ' + options.success);
+                    }
+                    return callback(args, undefined);
+                }
+                else {
+                    if (options && options.failure) {
+                        console.warn(options.name + ': ' + options.failure);
+                    }
+                    return callback(undefined, 'Condition not met');
                 }
             };
         },
@@ -428,5 +493,17 @@ var
                 } else {
                     return callbackToCancel(undefined, 'Callback cancelled');
                 }
+            };
+        },
+
+
+    /**
+     * ...
+     */
+    errorFactory = exports.error =
+        function (errorMessage) {
+            'use strict';
+            return function requestor(callback, args) {
+                throw new Error(errorMessage);
             };
         };
