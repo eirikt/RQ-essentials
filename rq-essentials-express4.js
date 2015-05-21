@@ -5,6 +5,9 @@ var
 // TODO: Document ...
     /**
      * ...
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
         function (doLog, statusCode, response) {
@@ -22,6 +25,9 @@ var
 // TODO: Document ...
     /**
      * Include the complete requestor argument as response body as is.
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
         function (doLog, statusCode, response) {
@@ -30,7 +36,7 @@ var
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
                 }
-                response.status(statusCode).send(responseBody);
+                response.status(statusCode).json(responseBody);
                 return callback(responseBody, undefined);
             };
         },
@@ -40,6 +46,9 @@ var
     /**
      * Include the given properties (stated in "responseKeys" array) only,
      * picked from the requestor argument ("responseValues" object) as response body.
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
         function (doLog, statusCode, responseKeys, response) {
@@ -54,27 +63,7 @@ var
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
                 }
-                response.status(statusCode).send(responseBody);
+                response.status(statusCode).json(responseBody);
                 return callback(responseValues, undefined);
             };
         };
-    /* OLD ...
-    dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
-        function (doLog, statusCode, responseKeys, response) {
-            'use strict';
-            return function requestor(callback, responseValues) {
-                var responseBodyPropertyKeys = Array.isArray(responseKeys) ? responseKeys : [responseKeys],
-                    responseBodyPropertyValues = Array.isArray(responseValues) ? responseValues : [responseValues],
-                    responseBody = {};
-
-                responseBodyPropertyKeys.map(function (responseBodyPropertyKey, index) {
-                    responseBody[responseBodyPropertyKey] = responseBodyPropertyValues[index];
-                });
-                if (doLog) {
-                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
-                }
-                response.status(statusCode).send(responseBody);
-                return callback(responseValues, undefined);
-            };
-        };
-    */
