@@ -121,41 +121,77 @@ var __ = require('underscore'),
         rq.identity,
 
 
-// TODO: DRY the success and failure handling
+    /**
+     * Success handling: Only supports status code only, vis (Number) incoming argument.
+     *
+     * @function
+     * @private
+     */
+    _handleSuccess = function (success, failure, request, response) {
+        'use strict';
+        var successMessage,
+            uri = request.originalUrl,
+            internalServerError = httpResponse['Internal Server Error'],
+            statusCode = internalServerError;
+
+        if (__.isNumber(success)) {
+            statusCode = success;
+            successMessage = httpResponse[statusCode];
+            response.status(statusCode).json(successMessage);
+        }
+        console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
+
+        if (failure) {
+            console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+        }
+    },
+
+
+    /**
+     * Failure handling: Supports timeout handling and all kinds of failures, with 500 Internal Server Error aa the default error response code.
+     *
+     * @function
+     * @private
+     */
+    _handleFailure = function (success, failure, request, response) {
+        'use strict';
+        var failureMessage,
+            internalServerError = httpResponse['Internal Server Error'],
+            statusCode = internalServerError;
+
+        if (__.isFunction(failure)) {
+            failureMessage = typeof failure;
+
+        } else if (__.isObject(failure)) {
+            failureMessage = 'Details: ';
+            if (failure.name) {
+                failureMessage += failure.name;
+                if (failure.milliseconds) {
+                    failureMessage += ' after ' + failure.milliseconds + ' milliseconds';
+                }
+            } else {
+                failureMessage = JSON.stringify(failure);
+            }
+
+        } else if (__.isNumber(failure)) {
+            statusCode = failure;
+            failureMessage = httpResponse[statusCode];
+
+        } else {
+            failureMessage = failure;
+        }
+
+        console.error('RQ-essentials-express4 :: Resource \'' + request.originalUrl + '\' failed! (' + failureMessage + ')');
+        response.status(statusCode).json(failureMessage);
+    },
+
+
     handleTimeout = exports.handleTimeout =
         function (request, response) {
             'use strict';
             return function (success, failure) {
-                var failureMessage,
-                    uri = request.originalUrl,
-                    internalServerError = httpResponse['Internal Server Error'],
-                    statusCode = internalServerError;
-
-                // Failure handling: Supports timeout handling and all kinds of failures, with 500 Internal Server Error aa the default error response code
                 if (failure) {
-                    if (__.isFunction(failure)) {
-                        failureMessage = typeof failure;
-
-                    } else if (__.isObject(failure)) {
-                        failureMessage = 'Details: ';
-                        if (failure.name) {
-                            failureMessage += failure.name;
-                            if (failure.milliseconds) {
-                                failureMessage += ' after ' + failure.milliseconds + ' milliseconds';
-                            }
-                        } else {
-                            failureMessage = JSON.stringify(failure);
-                        }
-
-                    } else if (__.isNumber(failure)) {
-                        statusCode = failure;
-                        failureMessage = httpResponse[statusCode];
-
-                    } else {
-                        failureMessage = failure;
-                    }
-                    console.error('RQ-essentials-express4 :: Resource \'' + uri + '\' failed! (' + failureMessage + ')');
-                    response.status(statusCode).json(failureMessage);
+                    _handleFailure(success, failure, request, response);
                 }
             };
         },
@@ -165,52 +201,12 @@ var __ = require('underscore'),
         function (request, response) {
             'use strict';
             return function (success, failure) {
-                var failureMessage,
-                    successMessage,
-                    uri = request.originalUrl,
-                    internalServerError = httpResponse['Internal Server Error'],
-                    statusCode = internalServerError;
-
-                // Success handling: Only supports status code only, vis (Number) incoming argument
                 if (success) {
-                    if (__.isNumber(success)) {
-                        statusCode = success;
-                        successMessage = httpResponse[statusCode];
-                        response.status(statusCode).json(successMessage);
-                    }
-                    console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
-
-                    if (failure) {
-                        console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
-                    }
+                    _handleSuccess(success, failure, request, response);
                     return;
                 }
-
-                // Failure handling: Supports timeout handling and all kinds of failures, with 500 Internal Server Error aa the default error response code
                 if (failure) {
-                    if (__.isFunction(failure)) {
-                        failureMessage = typeof failure;
-
-                    } else if (__.isObject(failure)) {
-                        failureMessage = 'Details: ';
-                        if (failure.name) {
-                            failureMessage += failure.name;
-                            if (failure.milliseconds) {
-                                failureMessage += ' after ' + failure.milliseconds + ' milliseconds';
-                            }
-                        } else {
-                            failureMessage = JSON.stringify(failure);
-                        }
-
-                    } else if (__.isNumber(failure)) {
-                        statusCode = failure;
-                        failureMessage = httpResponse[statusCode];
-
-                    } else {
-                        failureMessage = failure;
-                    }
-                    console.error('RQ-essentials-express4 :: Resource \'' + uri + '\' failed! (' + failureMessage + ')');
-                    response.status(statusCode).json(failureMessage);
+                    _handleFailure(success, failure, request, response);
                 }
             };
         };
