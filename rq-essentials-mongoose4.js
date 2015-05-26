@@ -2,7 +2,11 @@
 
 var __ = require('underscore'),
 
-    mongoose4ModelInvocation = exports.mongoose =
+// TODO: Fix this lib, functions (including naming) seem strange and not consistent ...
+    /**
+     * ...
+     */
+    mongoose4GenericInvocationFactory = exports.mongoose =
         function (mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
@@ -25,7 +29,11 @@ var __ = require('underscore'),
         },
 
 
-    mongoose4ModelInvocationJson = exports.mongooseJson =
+// TODO: Document ...
+    /**
+     * ...
+     */
+    mongoose4ModelGenericInvocationWithJsonResultFactory = exports.mongooseJson =
         function (mongooseModel, mongooseModelFunctionName, conditions) {
             'use strict';
             if (!__.isString(mongooseModelFunctionName)) {
@@ -47,6 +55,25 @@ var __ = require('underscore'),
         },
 
 
+// TODO: Document ...
+    /**
+     * ...
+     */
+    mongoose4FindFactory = exports.mongooseFindInvocation =
+        function (type, findQuery, sortQuery, skip, limit) {
+            'use strict';
+            return function requestor(callback, args) {
+                type.find(findQuery).sort(sortQuery).skip(skip).limit(limit).exec(function (err, books) {
+                    callback(books, undefined);
+                });
+            };
+        },
+
+
+// TODO: Document ...
+    /**
+     * ...
+     */
     mongoose4QueryInvocationFactory = exports.mongooseQueryInvocation =
         function (functionName, conditions) {
             'use strict';
@@ -63,3 +90,4 @@ var __ = require('underscore'),
                 });
             };
         };
+

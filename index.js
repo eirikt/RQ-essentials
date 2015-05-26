@@ -21,10 +21,17 @@ essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
 essentials.dispatchResponseWithScalarBody = express4.dispatchResponseWithScalarBody;
 essentials.dispatchResponseWithJsonBody = express4.dispatchResponseWithJsonBody;
 
+essentials.vanillaExecutor = express4.vanillaExecutor;
+essentials.run = express4.vanillaExecutor;
+essentials.go = express4.vanillaExecutor;
+essentials.handleTimeout = express4.handleTimeout;
+essentials.handleTimeoutAndStatusCode = express4.handleTimeoutAndStatusCode;
+
 essentials.executeAndVerify = mocha.executeAndVerify;
 
 essentials.mongoose = mongoose4.mongoose;
 essentials.mongooseJson = mongoose4.mongooseJson;
+essentials.mongooseFindInvocation = mongoose4.mongooseFindInvocation;
 essentials.mongooseQueryInvocation = mongoose4.mongooseQueryInvocation;
 
 essentials.get = request.get;

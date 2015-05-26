@@ -12,7 +12,7 @@ var request = require('request'),
      * @see https://github.com/mikeal/request
      * @see https://www.npmjs.org/package/request
      */
-    getRequestorizer = exports.get =
+    getFactory = exports.get =
         function (encoding, uri) {
             'use strict';
             if (arguments.length < 2) {
@@ -42,7 +42,7 @@ var request = require('request'),
         },
 
 
-    getAndEncodeRequestorizer = exports.getEncoded =
+    getAndEncodeFactory = exports.getEncoded =
         function (uri, encoding) {
             'use strict';
             return function requestor(callback, args) {

@@ -5,8 +5,9 @@ var expect = require('chai').expect,
     utils = require('./../utils'),
     RQ = require('async-rq'),
     rq = require('./../rq-essentials'),
-    rqMocha = require('./../rq-essentials-mocha'),
-    rqCaching = require('./../rq-essentials-caching');
+    rqExpress = require('./../rq-essentials-express4'),
+    rqCaching = require('./../rq-essentials-caching'),
+    rqMocha = require('./../rq-essentials-mocha');
 
 
 describe('RQ.Essentials Caching', function () {
@@ -177,9 +178,9 @@ describe('RQ.Essentials Caching', function () {
                     expect(rqCaching._getStack()[1]).to.be.equal(secondObjectToBeCached);
                     return callback(args, undefined);
                 },
-                rq.exec(done)
+                rq.execute(done)
 
-            ])(rq.go);
+            ])(rqExpress.vanillaExecutor);
         });
     });
 
@@ -202,7 +203,7 @@ describe('RQ.Essentials Caching', function () {
         });
 
 
-        it('should honour LIFO queue sematics', function (done) {
+        it('should honour LIFO queue semantics', function (done) {
             var firstObjectToBeCached = { entityId: 42 },
                 secondObjectToBeCached = { someProperty: 'Mr. Bond' };
 
@@ -266,9 +267,9 @@ describe('RQ.Essentials Caching', function () {
                     expect(rqCaching._getStack().length).to.be.equal(0);
                     return callback(args, undefined);
                 },
-                rq.exec(done)
+                rq.execute(done)
 
-            ])(rq.go);
+            ])(rqExpress.vanillaExecutor);
         });
     });
 });
