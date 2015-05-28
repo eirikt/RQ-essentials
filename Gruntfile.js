@@ -22,6 +22,13 @@ module.exports = function (grunt) {
                     'echo   lint (alias:jshint)     run JSHint',
                     'echo   doc (alias:jsdoc)       build JSDoc (in local folder \'docs\''
                 ].join('&&')
+            },
+            // TODO: Introduce 'grunt-git'
+            publish:{
+                options: { stdout: true, stderr: true, failOnError: true },
+                command: [
+                    'echo TODO: Publish to GitHub Pages'
+                ].join('&&')
             }
         },
 
@@ -90,7 +97,7 @@ module.exports = function (grunt) {
             dist: {
                 src: ['*.js'],
                 options: {
-                    destination: 'docs',
+                    destination: 'site',
                     private: false
                 }
             }
@@ -107,6 +114,8 @@ module.exports = function (grunt) {
     grunt.registerTask('lint', ['jshint']);
     grunt.registerTask('doc', ['jsdoc']);
     grunt.registerTask('docs', ['jsdoc']);
+    // TODO: Introduce 'grunt-git'
+    grunt.registerTask('publish', ['docs', 'shell:publish']);
 
     grunt.registerTask('build:travis', ['test', 'lint']);
     grunt.registerTask('build:all', ['test', 'lint', 'doc']);

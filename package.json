@@ -13,7 +13,7 @@
         "async-rq": "~0.0.1",
         "underscore": "~1.8.3",
         "request": "~2.55.0",
-        "iconv-lite": "~0.4.8",
+        "iconv-lite": "~0.4.10",
         "statuses": "~1.2.1"
     },
     "devDependencies": {
