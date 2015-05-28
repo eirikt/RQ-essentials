@@ -8,6 +8,7 @@
 .bin
 
 node_modules
+site
 
 # Temp files
 howto.md
