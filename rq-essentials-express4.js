@@ -115,7 +115,6 @@ var __ = require('underscore'),
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
-     * @param {*} value the argument that will be returned
      */
     vanillaExecutor = exports.vanillaExecutor =
         rq.identity,

@@ -1,6 +1,7 @@
 /* global require:false, exports:false, console:false */
 
 var __ = require('underscore'),
+    curry = require('./utils').curry,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -222,24 +223,8 @@ var __ = require('underscore'),
     /**
      * ...
      */
-    conditionalFactory = exports.condition = exports.continueIf = exports.if =
-        function (condition) {
-            'use strict';
-            return function requestor(callback, args) {
-                if (condition.call(this, args)) {
-                    return callback(args, undefined);
-                } else {
-                    return callback(undefined, 'Condition not met');
-                }
-            };
-        },
-
-
-    /**
-     * ...
-     */
     instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
-        function (condition, options) {
+        function (options, condition) {
             'use strict';
             return function requestor(callback, args) {
                 if (condition.call(this, args)) {
@@ -256,6 +241,23 @@ var __ = require('underscore'),
                 }
             };
         },
+
+
+    /**
+     * ...
+     */
+    conditionalFactory = exports.condition = exports.continueIf = exports.if =
+        //function (condition) {
+        //    'use strict';
+        //    return function requestor(callback, args) {
+        //        if (condition.call(this, args)) {
+        //            return callback(args, undefined);
+        //        } else {
+        //            return callback(undefined, 'Condition not met');
+        //        }
+        //    };
+        //},
+        curry(instrumentedConditionalFactory, null),
 
 
     /**
@@ -307,6 +309,14 @@ var __ = require('underscore'),
      * </pre>
      * </p>
      * <p>
+     * <em>Aliases</em>
+     * </p>
+     * <p>
+     * <ul>
+     *     <li><code>undefined</code></li>
+     * </ul>
+     * </p>
+     * <p>
      * A "data generator" requestor => No forwarding of incoming arguments/data.
      * A typical parallel requestor, or as a starting requestor in a sequence.
      * </p>
@@ -331,11 +341,8 @@ var __ = require('underscore'),
      *
      * @function
      */
-    nullRequestor = exports.undefined =
-        function (callback, args) {
-            'use strict';
-            return callback(undefined, undefined);
-        },
+    nullRequestor = exports.nullRequestor = exports.undefined =
+        identityFactory(undefined),
 
 
     /**
@@ -344,11 +351,8 @@ var __ = require('underscore'),
      *     f(callback, x) = callback(null)
      * </pre>
      */
-    emptyRequestor = exports.empty = exports.null =
-        function (callback, args) {
-            'use strict';
-            return callback(null, undefined);
-        },
+    emptyRequestor = exports.emptyRequestor = exports.empty = exports.null =
+        identityFactory(null),
 
 
     /**
@@ -357,11 +361,8 @@ var __ = require('underscore'),
      *     f(callback, x) = callback(true)
      * </pre>
      */
-    tautologyRequestor = exports.true =
-        function (callback, args) {
-            'use strict';
-            return callback(true, undefined);
-        },
+    tautologyRequestor = exports.tautologyRequestor = exports.true =
+        identityFactory(true),
 
 
     /**
@@ -370,11 +371,8 @@ var __ = require('underscore'),
      *     f(callback, x) = callback(false)
      * </pre>
      */
-    contradictionRequestor = exports.false =
-        function (callback, args) {
-            'use strict';
-            return callback(false, undefined);
-        },
+    contradictionRequestor = exports.contradictionRequestor = exports.false =
+        identityFactory(false),
 
 
     /**
@@ -384,11 +382,8 @@ var __ = require('underscore'),
      * </pre>
      * Returning <code>Date.now()</code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
      */
-    timestampRequestor = exports.timestamp = exports.now =
-        function (callback, args) {
-            'use strict';
-            return callback(Date.now(), undefined);
-        },
+    timestampRequestor = exports.timestampRequestor = exports.timestamp = exports.now =
+        identityFactory(Date.now()),
 
 
     /**
@@ -397,11 +392,13 @@ var __ = require('underscore'),
      *     f(callback, x) = callback(new Date())
      * </pre>
      */
-    dateRequestor = exports.date =
-        function (callback, args) {
-            'use strict';
-            return callback(new Date(), undefined);
-        },
+    dateRequestor = exports.dateRequestor = exports.date =
+        identityFactory(new Date()),
+
+
+    /** @function */
+    notImplemented = exports.notImplemented =
+        errorFactory('Not yet implemented'),
 
 
     /**
@@ -412,24 +409,10 @@ var __ = require('underscore'),
      *
      * Just pass things along without doing anything ...
      */
-    noopRequestor = exports.noop =
+    noopRequestor = exports.noopRequestor = exports.noop =
         function (callback, args) {
             'use strict';
             return callback(args, undefined);
-        },
-
-
-    /**
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     * @function
-     * @type {Function}
-     * @param {*} value the argument that will be returned
-     * @return {*} the given argument
-     */
-    notImplemented = exports.notImplemented =
-        function (callback, args) {
-            'use strict';
-            throw new Error('Not yet implemented');
         },
 
 
@@ -450,8 +433,8 @@ var __ = require('underscore'),
      * Especially handy when you have to curry the callback, e.g. when terminating nested requestor pipelines.
      *
      */
-        // TODO: Do not feel I am quite on top of this one ... What does this function really do!?
-    terminatorRequestor = exports.terminator =
+        // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
+    terminatorRequestor = exports.terminatorRequestor = exports.terminator =
         function (g, callback, args) {
             'use strict';
             return callback(g(args), undefined);
@@ -465,8 +448,8 @@ var __ = require('underscore'),
      *
      * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
      */
-        // TODO: Do not feel I am quite on top of this one ... What does this function really do!?
-    interceptorRequestor = exports.interceptor =
+        // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
+    interceptorRequestor = exports.interceptorRequestor = exports.interceptor =
         function (g, y, callback, args) {
             'use strict';
 
