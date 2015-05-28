@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: rq-essentials-express4.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: rq-essentials-express4.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global require:false, exports:false, console:false, JSON:false */
+
+var __ = require('underscore'),
+    httpResponse = require('statuses'),
+    rq = require('./rq-essentials'),
+
+// TODO: Document ...
+    /**
+     * ...
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
+     */
+    dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
+        function (doLog, statusCode, response) {
+            'use strict';
+            return function requestor(callback, args) {
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode);
+                }
+                response.sendStatus(statusCode);
+                return callback(args, undefined);
+            };
+        },
+
+
+// TODO: Document ...
+    /**
+     * Include the complete requestor argument as response body as is.
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
+     */
+    dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
+        function (doLog, statusCode, response) {
+            'use strict';
+            return function requestor(callback, responseBody) {
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                response.status(statusCode).json(responseBody);
+                return callback(responseBody, undefined);
+            };
+        },
+
+
+// TODO: Document ...
+    /**
+     * Include the given properties (stated in "responseKeys" array) only,
+     * picked from the requestor argument ("responseValues" object) as response body.
+     *
+     * Charset will by default be set to UTF-8.
+     * Content Type will by default be set to 'application/json'.
+     */
+    dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
+        function (doLog, statusCode, responseKeys, response) {
+            'use strict';
+            return function requestor(callback, responseValues) {
+                var responseBodyPropertyKeys = Array.isArray(responseKeys) ? responseKeys : [responseKeys],
+                    responseBody = {};
+
+                responseBodyPropertyKeys.map(function (responseBodyPropertyKey) {
+                    responseBody[responseBodyPropertyKey] = responseValues[responseBodyPropertyKey];
+                });
+                if (doLog) {
+                    console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                response.status(statusCode).json(responseBody);
+                return callback(responseValues, undefined);
+            };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Handlers and instigators.
+
+// RQ requestor chains need an initial callback function to start executing.
+// This callback function also acts as a handler completed requestor chains.
+// The callback function has two arguments: &lt;code>success&lt;/code> and &lt;code> failure&lt;/code>,
+// handling both successful executions and failures, e.g. timeouts.
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
+     * The identity function as a vanilla requestor chain executor/handler.
+     * &lt;/p>
+     * &lt;p>
+     * &lt;em>Aliases&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;ul>
+     *     &lt;li>&lt;code>run&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>go&lt;/code>&lt;/li>
+     * &lt;/ul>
+     * &lt;/p>
+     * ...
+     * &lt;p>
+     * &lt;em>Usage examples&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * Convenient for triggering execution of RQ requestor chains:
+     * &lt;pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials'),
+     *         run = rq.run;
+     *
+     *     RQ.sequence([
+     *         myRequestor,
+     *         myNextRequestor,
+     *         ...
+     *     ])(run)
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     */
+    vanillaExecutor = exports.vanillaExecutor =
+        rq.identity,
+
+
+    /**
+     * Success handling: Only supports status code only, vis (Number) incoming argument.
+     *
+     * @function
+     * @private
+     */
+    _handleSuccess = function (success, failure, request, response) {
+        'use strict';
+        var successMessage,
+            uri = request.originalUrl,
+            internalServerError = httpResponse['Internal Server Error'],
+            statusCode = internalServerError;
+
+        if (__.isNumber(success)) {
+            statusCode = success;
+            successMessage = httpResponse[statusCode];
+            response.status(statusCode).json(successMessage);
+        }
+        console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
+
+        if (failure) {
+            console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+        }
+    },
+
+
+    /**
+     * Failure handling: Supports timeout handling and all kinds of failures, with 500 Internal Server Error aa the default error response code.
+     *
+     * @function
+     * @private
+     */
+    _handleFailure = function (success, failure, request, response) {
+        'use strict';
+        var failureMessage,
+            internalServerError = httpResponse['Internal Server Error'],
+            statusCode = internalServerError;
+
+        if (__.isFunction(failure)) {
+            failureMessage = typeof failure;
+
+        } else if (__.isObject(failure)) {
+            failureMessage = 'Details: ';
+            if (failure.name) {
+                failureMessage += failure.name;
+                if (failure.milliseconds) {
+                    failureMessage += ' after ' + failure.milliseconds + ' milliseconds';
+                }
+            } else {
+                failureMessage = JSON.stringify(failure);
+            }
+
+        } else if (__.isNumber(failure)) {
+            statusCode = failure;
+            failureMessage = httpResponse[statusCode];
+
+        } else {
+            failureMessage = failure;
+        }
+
+        console.error('RQ-essentials-express4 :: Resource \'' + request.originalUrl + '\' failed! (' + failureMessage + ')');
+        response.status(statusCode).json(failureMessage);
+    },
+
+
+    handleTimeout = exports.handleTimeout =
+        function (request, response) {
+            'use strict';
+            return function (success, failure) {
+                if (failure) {
+                    _handleFailure(success, failure, request, response);
+                }
+            };
+        },
+
+
+    handleTimeoutAndStatusCode = exports.handleTimeoutAndStatusCode =
+        function (request, response) {
+            'use strict';
+            return function (success, failure) {
+                if (success) {
+                    _handleSuccess(success, failure, request, response);
+                    return;
+                }
+                if (failure) {
+                    _handleFailure(success, failure, request, response);
+                }
+            };
+        };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#cancelFactory">cancelFactory</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#conditionalFactory">conditionalFactory</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#errorFactory">errorFactory</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#failFastFunctionFactory">failFastFunctionFactory</a></li><li><a href="global.html#getFactory">getFactory</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#instrumentedConditionalFactory">instrumentedConditionalFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientFunctionFactory">lenientFunctionFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#nullRequestor">nullRequestor</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu May 28 2015 08:13:35 GMT+0200 (W. Europe Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
