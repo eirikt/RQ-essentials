@@ -17,7 +17,7 @@ var
      * </p>
      * <p>
      * This function is just a NOOP function -
-     * with the side effect of writing the arg to the given cache object using the given cache key.
+     * with the side effect of writing the arg to the associative array cache object using the given cache key.
      * </p>
      */
     cacheWrite = exports.cacheWrite = exports.write =
@@ -77,6 +77,5 @@ var
     stackPop = exports.stackPop = exports.pop =
         function (callback, args) {
             'use strict';
-            var stackedObject = _stack.pop();
-            return callback(stackedObject, undefined);
+            return callback(_stack.pop(), undefined);
         };

@@ -1,39 +1,120 @@
-/* global require:false, describe:false, it:false */
+/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false */
 /* jshint -W030 */
 
 var expect = require('chai').expect,
-    utils = require('./../utils'),
+    __ = require('underscore'),
+
     rq = require('./../rq-essentials');
 
-describe('utils clone', function () {
+
+describe('RQ-essentials', function () {
     'use strict';
 
-    it('should be a function', function () {
-        expect(utils.clone).to.exist;
-        expect(utils.clone).to.be.a.function;
+    it('should exist', function () {
+        expect(rq).to.exist;
+        expect(rq).to.be.an('object');
     });
 
-    it('should just return falsy values', function () {
-        expect(utils.clone()).not.to.exist;
-        expect(utils.clone(null)).to.be.null;
-        expect(utils.clone(false)).to.be.false;
-        expect(utils.clone(0)).to.be.equal(0);
-        expect(utils.clone('')).to.be.equal('');
+
+    describe('nullRequestor', function () {
+        it('should exist', function () {
+            expect(rq.undefined).to.exist;
+            expect(rq.undefined).to.be.a('function');
+        });
+
+        it('should be a requestor', function () {
+            var nullRequestor = rq.undefined;
+
+            expect(nullRequestor.name).to.be.equal('requestor');
+            expect(nullRequestor.length).to.be.equal(2);
+        });
+
+        it('should ignore requestor incoming arguments', function () {
+            var nullRequestor = rq.undefined,
+                trivialCallback = rq.identity,
+                args = { entityId: 42 };
+
+            nullRequestor(trivialCallback, args);
+
+            expect(__.keys(args).length).to.be.equal(1);
+            expect(args.entityId).to.be.equal(42);
+        });
+
+        it('should return undefined', function () {
+            var nullRequestor = rq.undefined,
+                trivialCallback = rq.identity,
+                executedTimestampRequestor = nullRequestor(trivialCallback);
+
+            expect(executedTimestampRequestor).to.be.undefined;
+        });
     });
 
-    it('should clone arrays (of e.g. dates)', function () {
-        var aDate = new Date(2014, 10, 25, 0, 0, 0);
-        var anArray = [];
 
-        anArray[0] = null;
-        anArray[1] = aDate;
-        anArray[2] = 'Something else';
+    describe('timestampRequestor', function () {
+        it('should exist', function () {
+            expect(rq.timestamp).to.exist;
+            expect(rq.timestamp).to.be.a('function');
+        });
 
-        var aClonedArray = utils.clone(anArray);
-        expect(aClonedArray[0]).to.be.null;
-        expect(aClonedArray[1]).to.be.an.object;
-        expect(aClonedArray[1].getTime()).to.be.equal(new Date(2014, 10, 25, 0, 0, 0).getTime());
-        expect(aClonedArray[1]).to.be.equal(aDate);
-        expect(aClonedArray[2]).to.be.equal('Something else');
+        it('should be a requestor', function () {
+            var timestampRequestor = rq.timestamp;
+
+            expect(timestampRequestor.name).to.be.equal('requestor');
+            expect(timestampRequestor.length).to.be.equal(2);
+        });
+
+        it('should ignore requestor incoming arguments', function () {
+            var timestampRequestor = rq.timestamp,
+                trivialCallback = rq.identity,
+                args = { entityId: 42 };
+
+            timestampRequestor(trivialCallback, args);
+
+            expect(__.keys(args).length).to.be.equal(1);
+            expect(args.entityId).to.be.equal(42);
+        });
+
+        it('should return a UNIX timestamp', function () {
+            var timestampRequestor = rq.timestamp,
+                trivialCallback = rq.identity,
+                executedTimestampRequestor = timestampRequestor(trivialCallback);
+
+            expect(executedTimestampRequestor).to.be.a('number');
+            expect(executedTimestampRequestor).to.be.above(new Date(2015, 4, 1).getTime());
+            expect(executedTimestampRequestor).to.be.below(Date.now());
+        });
+    });
+
+
+    describe('conditionalRequestorFactory', function () {
+        it('should exist', function () {
+            expect(rq.if).to.exist;
+            expect(rq.if).to.be.a('function');
+        });
+
+        it('should be a requestor factory', function () {
+            var conditionalRequestorFactory = rq.if,
+                condition = 1 === 1,
+                requestor = conditionalRequestorFactory(condition);
+
+            expect(requestor.name).to.be.equal('requestor');
+            expect(requestor.length).to.be.equal(2);
+        });
+
+        it('should let true conditions through', function () {
+            var conditionalRequestorFactory = rq.if,
+                noopRequestor = conditionalRequestorFactory(true);
+
+            // TODO: Use fallbacks and done ...
+
+        });
+
+        it('should cancel further processing when condition is false', function () {
+            var conditionalRequestorFactory = rq.if,
+                cancelRequestor = conditionalRequestorFactory(false);
+
+            // TODO: Use fallbacks and done ...
+
+        });
     });
 });

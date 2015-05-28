@@ -10,7 +10,7 @@ var expect = require('chai').expect,
     rqMocha = require('./../rq-essentials-mocha');
 
 
-describe('RQ.Essentials Caching', function () {
+describe('RQ-essentials: Caching', function () {
     'use strict';
 
     beforeEach(function () {
