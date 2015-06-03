@@ -121,7 +121,7 @@ var __ = require('underscore'),
 
 
     /**
-     * Success handling: Only supports status code only, vis (Number) incoming argument.
+     * Success handling: Only supports status code only, via (Number) incoming argument.
      *
      * @function
      * @private

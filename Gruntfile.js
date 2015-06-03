@@ -18,9 +18,9 @@ module.exports = function (grunt) {
                     'echo #######################################',
                     'echo.',
                     'echo Available Grunt tasks are:',
-                    'echo   test                    executes all Mocha tests',
-                    'echo   lint (alias:jshint)     run JSHint',
-                    'echo   doc (alias:jsdoc)       build JSDoc (in local folder \'docs\''
+                    'echo   test                        executes all Mocha tests',
+                    'echo   lint (alias:jshint)         run JSHint',
+                    'echo   doc  (alias:docs,jsdoc)     build JSDoc (in local folder \'docs\''
                 ].join('&&')
             },
             // TODO: Introduce 'grunt-git'

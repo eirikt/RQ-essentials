@@ -1,7 +1,9 @@
 /* global require:false, exports:false, console:false */
 
 var __ = require('underscore'),
-    curry = require('./utils').curry,
+    utils = require('./utils'),
+    curry = utils.curry,
+    clone = utils.clone,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -18,12 +20,12 @@ var __ = require('underscore'),
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
-     * @param {*} value the argument that will be returned
+     * @param {*} x the object that will be returned
      */
     identity = exports.identity =
-        function (value) {
+        function (x) {
             'use strict';
-            return value;
+            return x;
         },
 
 
@@ -33,10 +35,17 @@ var __ = require('underscore'),
 // ("Requestor factories" were previously called "requestories".)
 //
 // "Data generator requestors",
-// ignoring incoming arguments and passes along their own original arguments.
+// always ignores incoming arguments, and passes along their own original arguments.
+//
+// "Data generator requestors" ignores incoming arguments, and produces outgoing arguments by other means.
+// E.g. like here, with a explicitly provided value/function.
+//
+// A "data generator" requestor => No forwarding of incoming arguments/data.
+// A typical parallel requestor, or as a starting requestor in a sequence.
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * <p>
      * <pre>
      *     f(x) = F(callback(x))
@@ -45,17 +54,61 @@ var __ = require('underscore'),
      * <pre>
      *     f(x) = F(callback(x()))
      * </pre>
+     * if the provided argument is a function.
      * </p>
      * <p>
-     * A "data generator" requestor => No forwarding of existing data.
-     * A typical parallel requestor, or as a starting requestor in a sequence ...
+     * <em>Aliases</em>
      * </p>
+     * <p>
+     * <ul>
+     *     <li><code>return</code></li>
+     *     <li><code>value</code></li>
+     * </ul>
+     * </p>
+     * <p>
+     * <em>Usage examples</em>
+     * </p>
+     * <p>
+     * Pi as argument to <code>myNextRequestor</code>:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.value(Math.PI),
+     *         myNextRequestor,
+     *         ...
+     *     ]);
+     * </pre>
+     * </p>
+     * <p>
+     * Random numbers as arguments to <code>myNextRequestor</code>:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         RQ.parallel([
+     *             rq.value(Math.random),
+     *             rq.value(Math.random),
+     *             rq.value(Math.random),
+     *             rq.value(Math.random)
+     *         ]),
+     *         myNextRequestor,
+     *         ...
+     *     ]);
+     * </pre>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     * @param {*} x a value or function, being or producing the argument that will be returned
      */
     identityFactory = exports.return = exports.value =
-        function (valueOrFunc) {
+        function (x) {
             'use strict';
             return function requestor(callback, args) {
-                var retVal = __.isFunction(valueOrFunc) ? valueOrFunc.call(this) : valueOrFunc;
+                var retVal = __.isFunction(x) ? x.call(this) : x;
                 return callback(retVal, undefined);
             };
         },
@@ -67,37 +120,131 @@ var __ = require('underscore'),
 // ("Requestor factories" were previously called "requestories".)
 //
 // "Data manipulator requestors",
-// takes incoming arguments, manipulates them, and passes them along.
+// takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
      * The primary requestor factory:
      * <pre>
      *     f(g) = F(callback(g(x)))
      * </pre>
+     * </p>
+     * <p>
+     * <em>Aliases</em>
+     * </p>
+     * <p>
+     * <ul>
+     *     <li><code>requestorize</code></li>
+     *     <li><code>then</code></li>
+     *     <li><code>do</code></li>
+     * </ul>
+     * </p>
+     * <p>
+     * <strong>
+     * This requestor factory does not protect/seal/clone incoming arguments in any way.
+     * That is the callback function's responsibility!
+     * </strong>
+     * </p>
+     * <p>
+     * <em>Usage examples</em>
+     * </p>
+     * <p>
+     * Transforming a by-value number argument to its rounded version:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
      *
-     * A typical sequence requestor ...
+     *     RQ.sequence([
+     *         ...
+     *         rq.then(Math.round),
+     *         ...
+     *     ]);
+     * </pre>
+     * </p>
+     * <p>
+     * Transforming an by-reference object argument:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials'),
+     *
+     *         obj = {
+     *             val: 13.49
+     *         },
+     *         mutatingAdder = function (obj) { // NB! Mutates incoming arguments
+     *             obj.val += 1;
+     *             return obj;
+     *         },
+     *         pureAdder = function (obj) {
+     *             var newObj = clone(obj);
+     *             newObj.val += 1;
+     *             return newObj;
+     *         };
+     *
+     *     RQ.sequence([
+     *         rq.value(obj),
+     *         rq.then(pureAdder),
+     *         ...
+     *     ]);
+     * </pre>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     * @param {*} g a function which is applied to the arguments
      */
-        // TODO: To be a pure function, the arguments have to be cloned/not mutated!
-    failFastFunctionFactory = exports.requestorize = exports.requestor = exports.then = exports.do =
+    requestorFactory = exports.requestorize = exports.then = exports.do =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
                 return callback(g(args), undefined);
+
+                //var transformedVal1, transformedVal2;
+                //try {
+                //    transformedVal1 = g.call(this, clone(args));
+                //    //transformedVal2 = g(args);
+
+                //} catch (e) {
+                //    var ex = e;
+                //    console.error(e.message);
+                // }
+                //return callback(transformedVal1, undefined);
+
+                //return callback(g(clone(args)), undefined);
+
             };
         },
 
 
     /**
-     * The more lenient requestor factory:
-     * <pre>
-     *     f(g) = F(callback(g(x)))
-     * </pre>
-     * Catching exceptions, logging them, and terminating execution of requestors.
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * The more lenient requestor factory.
+     * The execution of the requestor is wrapped in a try-catch block.
+     * If an exception is thrown, its error message is written to <code>console.error</code>,
+     * and the requestor fails, halting further execution of the requestor chain.
+     * </p>
+     * <p>
+     * <em>Aliases</em>
+     * </p>
+     * <p>
+     * <ul>
+     *     <li><code>lenientRequestorize</code></li>
+     *     <li><code>lrequestorize</code></li>
+     *     <li><code>lthen</code></li>
+     *     <li><code>ldo</code></li>
+     * </ul>
+     * </p>
+     * <p>
+     * This factory creates "<em>data manipulator requestors</em>".
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
-     * A typical sequence requestor ...
+     * @function
+     * @param {*} g a function which is applied to the arguments
      */
-    lenientFunctionFactory = exports.lenientRequestorize = exports.lenientRequestor =
+    lenientRequestorFactory = exports.lenientRequestorize = exports.lrequestorize = exports.lthen = exports.ldo =
         function (g) {
             'use strict';
             return function requestor(callback, args) {
@@ -199,6 +346,15 @@ var __ = require('underscore'),
 //
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Requestor factories
+// - Takes arguments and returns a requestor function.
+// ("Requestor factories" were previously called "requestories".)
+//
+// Other requestors,
+// conditional execution, cancellers, and such.
+///////////////////////////////////////////////////////////////////////////////
+
     /**
      * Nice for stubbing requestor factories in tests.
      */
@@ -211,15 +367,6 @@ var __ = require('underscore'),
         },
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Requestor factories
-// - Takes arguments and returns a requestor function.
-// ("Requestor factories" were previously called "requestories".)
-//
-// Other requestors,
-// conditional execution, canellers, and such.
-///////////////////////////////////////////////////////////////////////////////
-
     /**
      * ...
      */
@@ -227,7 +374,8 @@ var __ = require('underscore'),
         function (options, condition) {
             'use strict';
             return function requestor(callback, args) {
-                if (condition.call(this, args)) {
+                var executedCondition = __.isFunction(condition) ? condition.call(this, args) : condition;
+                if (executedCondition) {
                     if (options && options.success) {
                         console.log(options.name + ': ' + options.success);
                     }
@@ -243,26 +391,10 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     conditionalFactory = exports.condition = exports.continueIf = exports.if =
-        //function (condition) {
-        //    'use strict';
-        //    return function requestor(callback, args) {
-        //        if (condition.call(this, args)) {
-        //            return callback(args, undefined);
-        //        } else {
-        //            return callback(undefined, 'Condition not met');
-        //        }
-        //    };
-        //},
         curry(instrumentedConditionalFactory, null),
 
 
-    /**
-     * ...
-     */
     cancelFactory = exports.cancel =
         function (callbackToCancel, logMessage) {
             'use strict';
@@ -278,9 +410,6 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     errorFactory = exports.error =
         function (errorMessage) {
             'use strict';
@@ -317,24 +446,19 @@ var __ = require('underscore'),
      * </ul>
      * </p>
      * <p>
-     * A "data generator" requestor => No forwarding of incoming arguments/data.
-     * A typical parallel requestor, or as a starting requestor in a sequence.
-     * </p>
-     * ...
-     * <p>
      * <em>Usage examples</em>
      * </p>
      * <p>
      * <code>undefined</code> as argument to <code>myNextRequestor</code>:
      * <pre>
-     *     var RQ = ('async-rq');
-     *     var rq = ('rq-essentials');
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
      *
      *     RQ.sequence([
      *         rq.undefined,
      *         myNextRequestor,
      *         ...
-     *     ])
+     *     ]);
      * </pre>
      * </p>
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
@@ -417,7 +541,8 @@ var __ = require('underscore'),
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// More requestors, curry-friendly.
+// More requestor factories
+// The requestors must be configured by currying.
 //
 // Functions that executes requests, synchronously or asynchronously
 // Asynchronicity is handled by callbacks.
@@ -425,13 +550,22 @@ var __ = require('underscore'),
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * This is the curry-friendly version of the primary requestor factory above (the one with the alias 'then').
+     * Especially handy when you have to curry the callback, e.g. when terminating nested requestor chains.
      * <pre>
      *     f(g, callback, x) = callback(g(x))
      * </pre>
+     * </p>
+     * <p>
+     * <strong>
+     * <em>NB! alpha version</em>&nbsp;&ndash;&nbsp;This function has not been settled, neither the name nor the meaning/semantics of it ...
+     * </strong>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
-     * This is the curry-friendly version of the primary requestor factory below (with the alias 'then').
-     * Especially handy when you have to curry the callback, e.g. when terminating nested requestor pipelines.
-     *
+     * @function
      */
         // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
     terminatorRequestor = exports.terminatorRequestor = exports.terminator =
@@ -442,11 +576,21 @@ var __ = require('underscore'),
 
 
     /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
      * <pre>
      *     f(g, y, callback, x) = callback(g(y))
      * </pre>
+     * </p>
+     * <p>
+     * <strong>
+     * <em>NB! alpha version</em>&nbsp;&ndash;&nbsp;This function has not been settled, neither the name nor the meaning/semantics of it ...
+     * </strong>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
-     * This function hi-jacks the argument-passing by substituting the callback arguments with its own.
+     * @function
      */
         // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
     interceptorRequestor = exports.interceptorRequestor = exports.interceptor =
