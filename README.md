@@ -14,10 +14,14 @@ Most of them quite influenced by RQ's [official documentation][2].
 This library is dependant on [async-rq][3], a CommonJS compliant fork of RQ. 
 RQ is [not][4] CommonJS compliant.
 
+
 ### Usage
 
-Documentation and usage examples will be added towards v0.1.0.
+Documentation and usage examples will be added, bit by bit - and somewhat finalized in v0.1.0.
 Then this library will be published to [npm][10], I guess.
+
+<strong>[Preliminary documentation](http://eirikt.github.io/RQ-essentials/global.html#identity)</strong>
+(The documented functions are situated below the "Methods" header, the rest above, under the "Members" header ...)
 
 
 ### [License](#license)

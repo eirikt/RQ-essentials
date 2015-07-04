@@ -69,7 +69,7 @@ var __ = require('underscore'),
      * <em>Usage examples</em>
      * </p>
      * <p>
-     * Pi as argument to <code>myNextRequestor</code>:
+     * <em>π</em> (pi) as argument to <code>myNextRequestor</code>:
      * <pre>
      *     var RQ = ('async-rq'),
      *         rq = ('rq-essentials');
@@ -531,7 +531,6 @@ var __ = require('underscore'),
         identityFactory(new Date()),
 
 
-    /** @function */
     notImplemented = exports.notImplemented =
         errorFactory('Not yet implemented'),
 
@@ -576,8 +575,6 @@ var __ = require('underscore'),
      * </strong>
      * </p>
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     *
-     * @function
      */
         // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
     terminatorRequestor = exports.terminatorRequestor = exports.terminator =
@@ -601,8 +598,6 @@ var __ = require('underscore'),
      * </strong>
      * </p>
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     *
-     * @function
      */
         // TODO: Do not feel I am quite on top of this one ... What does this function really mean?
     interceptorRequestor = exports.interceptorRequestor = exports.interceptor =
