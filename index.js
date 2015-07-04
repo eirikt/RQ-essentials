@@ -3,6 +3,7 @@
 var essentials = require('./rq-essentials'),
     caching = require('./rq-essentials-caching'),
     express4 = require('./rq-essentials-express4'),
+    logging = require('./rq-essentials-logging'),
     mocha = require('./rq-essentials-mocha'),
     mongoose4 = require('./rq-essentials-mongoose4'),
     request = require('./rq-essentials-request');
@@ -26,6 +27,8 @@ essentials.run = express4.vanillaExecutor;
 essentials.go = express4.vanillaExecutor;
 essentials.handleTimeout = express4.handleTimeout;
 essentials.handleTimeoutAndStatusCode = express4.handleTimeoutAndStatusCode;
+
+essentials.log = logging.loggerFactory;
 
 essentials.executeAndVerify = mocha.executeAndVerify;
 

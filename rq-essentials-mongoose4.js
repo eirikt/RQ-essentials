@@ -7,7 +7,7 @@ var __ = require('underscore'),
      * ...
      */
     mongoose4GenericInvocationFactory = exports.mongoose =
-        function (mongooseModel, mongooseModelFunction, conditions) {
+        function (doLog, mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
             var func = __.isString(mongooseModelFunction) ?
@@ -22,7 +22,9 @@ var __ = require('underscore'),
 
                         return callback(undefined, err);
                     }
-                    console.log('RQ-essentials-mongoose4 :: returning raw result (' + result + ')');
+                    if (doLog) {
+                        console.log('RQ-essentials-mongoose4 :: returning raw result (' + result + ')');
+                    }
                     return callback(result, undefined);
                 });
             };
@@ -34,7 +36,7 @@ var __ = require('underscore'),
      * ...
      */
     mongoose4ModelGenericInvocationWithJsonResultFactory = exports.mongooseJson =
-        function (mongooseModel, mongooseModelFunctionName, conditions) {
+        function (doLog, mongooseModel, mongooseModelFunctionName, conditions) {
             'use strict';
             if (!__.isString(mongooseModelFunctionName)) {
                 throw new Error('RQ-essentials-mongoose4 :: mongooseJson, second argument must be a String!');
@@ -48,7 +50,9 @@ var __ = require('underscore'),
                     }
                     var jsonResult = {};
                     jsonResult[mongooseModelFunctionName] = result;
-                    console.log('RQ-essentials-mongoose4 :: Function name \'' + mongooseModelFunctionName + '\', returning JSON result (' + JSON.stringify(jsonResult) + ')');
+                    if (doLog) {
+                        console.log('RQ-essentials-mongoose4 :: Function name \'' + mongooseModelFunctionName + '\', returning JSON result (' + JSON.stringify(jsonResult) + ')');
+                    }
                     return callback(jsonResult, undefined);
                 });
             };

@@ -33,7 +33,7 @@ describe('RQ-essentials, test/specification of JSDoc examples', function () {
                 function (callback, args) {
                     expect(args).to.be.an('array');
                     expect(args.length).to.be.equal(2);
-                    done()
+                    done();
                 }
             ])(run);
         });
