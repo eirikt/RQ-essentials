@@ -34,10 +34,10 @@ var __ = require('underscore'),
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
 //
-// "Data generator requestors",
+// "Data-generating requestors";
 // always ignores incoming arguments, and passes along their own original arguments.
 //
-// "Data generator requestors" ignores incoming arguments, and produces outgoing arguments by other means.
+// "Data-generating requestors" ignores incoming arguments, and produces outgoing arguments by other means.
 // E.g. like here, with a explicitly provided value/function.
 //
 // A "data generator" requestor => No forwarding of incoming arguments/data.
@@ -119,7 +119,7 @@ var __ = require('underscore'),
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
 //
-// "Data manipulator requestors",
+// "Data-manipulating requestors";
 // takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -280,7 +280,7 @@ var __ = require('underscore'),
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
 //
-// "Data ignoring requestors",
+// "Data-ignoring requestors",
 // ignores incoming arguments, does other stuff, causes various side-effects.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -351,7 +351,7 @@ var __ = require('underscore'),
 // - Takes arguments and returns a requestor function.
 // ("Requestor factories" were previously called "requestories".)
 //
-// Other requestors,
+// Other requestors;
 // conditional execution, cancellers, and such.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -363,6 +363,17 @@ var __ = require('underscore'),
             'use strict';
             return function requestor(callback, args) {
                 return callback(args, undefined);
+            };
+        },
+
+
+    waitFactory = exports.wait =
+        function (suspensionPeriodInMilliseconds) {
+            'use strict';
+            return function requestor(callback, args) {
+                setTimeout(function () {
+                    callback(args, undefined);
+                }, suspensionPeriodInMilliseconds);
             };
         },
 
@@ -432,7 +443,7 @@ var __ = require('underscore'),
     /**
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * <p>
-     * The requestor version of "the null function":
+     * The <em>nothing</em> requestor:
      * <pre>
      *     f(callback, x) = callback(undefined)
      * </pre>
@@ -465,12 +476,12 @@ var __ = require('underscore'),
      *
      * @function
      */
-    nullRequestor = exports.nullRequestor = exports.undefined =
+    nothingRequestor = exports.nothingRequestor = exports.undefined =
         identityFactory(undefined),
 
 
     /**
-     * The requestor version of "the empty function":
+     * The <em>empty function</em> requestor:
      * <pre>
      *     f(callback, x) = callback(null)
      * </pre>
@@ -480,7 +491,7 @@ var __ = require('underscore'),
 
 
     /**
-     * The tautology requestor:
+     * The <em>tautology</em> requestor:
      * <pre>
      *     f(callback, x) = callback(true)
      * </pre>
@@ -490,7 +501,7 @@ var __ = require('underscore'),
 
 
     /**
-     * The contradiction requestor:
+     * The <em>contradiction</em> requestor:
      * <pre>
      *     f(callback, x) = callback(false)
      * </pre>
@@ -511,7 +522,7 @@ var __ = require('underscore'),
 
 
     /**
-     * The "new Date()" requestor:
+     * The today requestor:
      * <pre>
      *     f(callback, x) = callback(new Date())
      * </pre>
@@ -526,12 +537,13 @@ var __ = require('underscore'),
 
 
     /**
-     * The NOP/NOOP requestor:
+     * The <em>no operation (NOP/NOOP)</em> requestor:
      * <pre>
      *     f(callback, x) = callback(x)
      * </pre>
      *
-     * Just pass things along without doing anything ...
+     * Just pass things along without doing anything ...<br/>
+     * Also known as <em>the null function</em>.
      */
     noopRequestor = exports.noopRequestor = exports.noop =
         function (callback, args) {
