@@ -4,8 +4,7 @@ var sinon = require('sinon'),
     expect = require('chai').expect,
     RQ = require('async-rq'),
     rq = require('./../rq-essentials'),
-    rqExpress = require('./../rq-essentials-express4'),
-    run = rqExpress.vanillaExecutor,
+    run = rq.vanillaExecutor,
     rqLogging = require('./../rq-essentials-logging'),
     log = rqLogging.loggerFactory;
 

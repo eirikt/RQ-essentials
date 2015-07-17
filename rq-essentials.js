@@ -3,7 +3,6 @@
 var __ = require('underscore'),
     utils = require('./utils'),
     curry = utils.curry,
-    clone = utils.clone,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -42,17 +41,18 @@ var __ = require('underscore'),
 //
 // A "data generator" requestor => No forwarding of incoming arguments/data.
 // A typical parallel requestor, or as a starting requestor in a sequence.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * <p>
      * <pre>
-     *     f(x) = F(callback(x))
+     *     f(x) = R(callback(x))
      * </pre>
      * or
      * <pre>
-     *     f(x) = F(callback(x()))
+     *     f(x) = R(callback(x()))
      * </pre>
      * if the provided argument is a function.
      * </p>
@@ -121,6 +121,7 @@ var __ = require('underscore'),
 //
 // "Data-manipulating requestors";
 // takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -128,7 +129,7 @@ var __ = require('underscore'),
      * <p>
      * The primary requestor factory:
      * <pre>
-     *     f(g) = F(callback(g(x)))
+     *     f(g) = R(callback(g(x)))
      * </pre>
      * </p>
      * <p>
@@ -164,7 +165,7 @@ var __ = require('underscore'),
      * </pre>
      * </p>
      * <p>
-     * Transforming an by-reference object argument:
+     * Transforming a by-reference object argument:
      * <pre>
      *     var RQ = ('async-rq'),
      *         rq = ('rq-essentials'),
@@ -282,6 +283,7 @@ var __ = require('underscore'),
 //
 // "Data-ignoring requestors",
 // ignores incoming arguments, does other stuff, causes various side-effects.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -289,7 +291,7 @@ var __ = require('underscore'),
      * <p>
      * Execution of arbitrary function:
      * <pre>
-     *     f(g) = g(); F(callback(x))
+     *     f(g) = g(); R(callback(x))
      * </pre>
      * </p>
      * <p>
@@ -310,7 +312,7 @@ var __ = require('underscore'),
      * <p>
      * Simple interceptor for execution of arbitrary function and argument:
      * <pre>
-     *     f(g, y) = g(y); F(callback(x))
+     *     f(g, y) = g(y); R(callback(x))
      * </pre>
      * </p>
      * <p>
@@ -330,7 +332,7 @@ var __ = require('underscore'),
 /**
  * <p>
  * <pre>
- *     f(g, y) = g(y); F(callback(x))
+ *     f(g, y) = g(y); R(callback(x))
  * </pre>
  * </p>
  */
@@ -378,9 +380,6 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
         function (options, condition) {
             'use strict';
@@ -531,11 +530,39 @@ var __ = require('underscore'),
         identityFactory(new Date()),
 
 
+    /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * This is an alternative way of setting status code on the response - let the end-trigger/handler take care of it ...
+     * </p>
+     * ...
+     * <p>
+     * <em>Usage examples</em>
+     * </p>
+     * <p>
+     * Letting the end-trigger/handler take care of HTTP response status code - if not timing out after 2 seconds, that is.
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.notImplemented
+     *     ], 2000)(rq.handleTimeoutAndStatusCode(request, response)); // => HTTP Response 501
+     * </pre>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     */
     notImplemented = exports.notImplemented =
-        errorFactory('Not yet implemented'),
+        function requestor(callback, args) {
+            return callback(undefined, 501);
+        },
 
 
     /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
      * The <em>no operation (NOP/NOOP)</em> requestor:
      * <pre>
      *     f(callback, x) = callback(x)
@@ -543,6 +570,10 @@ var __ = require('underscore'),
      *
      * Just pass things along without doing anything ...<br/>
      * Also known as <em>the null function</em>.
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
      */
     noopRequestor = exports.noopRequestor = exports.noop =
         function (callback, args) {
@@ -558,6 +589,7 @@ var __ = require('underscore'),
 // Functions that executes requests, synchronously or asynchronously
 // Asynchronicity is handled by callbacks.
 // ("callbacks" were previously called "request continuations"/"requestions".)
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -608,4 +640,54 @@ var __ = require('underscore'),
             //return callback(g(_clone(y)));
 
             return callback(g(y), undefined);
-        };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Handlers and instigators.
+
+// RQ requestor chains need an initial callback function to start executing.
+// This callback function also acts as a handler completed requestor chains.
+// The callback function has two arguments: <code>success</code> and <code> failure</code>,
+// handling both successful executions and failures, e.g. timeouts.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * The identity function as a vanilla requestor chain executor/handler.
+     * </p>
+     * <p>
+     * <em>Aliases</em>
+     * </p>
+     * <p>
+     * <ul>
+     *     <li><code>run</code></li>
+     *     <li><code>go</code></li>
+     * </ul>
+     * </p>
+     * ...
+     * <p>
+     * <em>Usage examples</em>
+     * </p>
+     * <p>
+     * Convenient for triggering execution of RQ requestor chains:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials'),
+     *         run = rq.run;
+     *
+     *     RQ.sequence([
+     *         myRequestor,
+     *         myNextRequestor,
+     *         ...
+     *     ])(run)
+     * </pre>
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     */
+    vanillaExecutor = exports.vanillaExecutor =
+        identity;

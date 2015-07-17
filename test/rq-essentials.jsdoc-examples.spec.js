@@ -2,11 +2,9 @@
 /* jshint -W030 */
 
 var expect = require('chai').expect,
-    __ = require('underscore'),
     RQ = require('async-rq'),
     rq = require('./../rq-essentials'),
-    rqExpress = require('./../rq-essentials-express4'),
-    run = rqExpress.vanillaExecutor;
+    run = rq.vanillaExecutor;
 
 
 describe('RQ-essentials, test/specification of JSDoc examples', function () {

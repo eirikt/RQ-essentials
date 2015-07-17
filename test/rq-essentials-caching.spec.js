@@ -2,10 +2,8 @@
 /* jshint -W030 */
 
 var expect = require('chai').expect,
-    utils = require('./../utils'),
     RQ = require('async-rq'),
     rq = require('./../rq-essentials'),
-    rqExpress = require('./../rq-essentials-express4'),
     rqCaching = require('./../rq-essentials-caching'),
     rqMocha = require('./../rq-essentials-mocha');
 
@@ -180,7 +178,7 @@ describe('RQ-essentials: Caching', function () {
                 },
                 rq.execute(done)
 
-            ])(rqExpress.vanillaExecutor);
+            ])(rq.vanillaExecutor);
         });
     });
 
@@ -269,7 +267,7 @@ describe('RQ-essentials: Caching', function () {
                 },
                 rq.execute(done)
 
-            ])(rqExpress.vanillaExecutor);
+            ])(rq.vanillaExecutor);
         });
     });
 });

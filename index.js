@@ -11,6 +11,9 @@ var essentials = require('./rq-essentials'),
 essentials.doLog = true;
 essentials.doNotLog = false;
 
+essentials.run = essentials.vanillaExecutor;
+essentials.go = essentials.vanillaExecutor;
+
 essentials.cacheWrite = caching.cacheWrite;
 essentials.cacheRead = caching.cacheRead;
 essentials.push = caching.push;
@@ -22,10 +25,10 @@ essentials.dispatchResponseStatusCode = express4.dispatchResponseStatusCode;
 essentials.dispatchResponseWithScalarBody = express4.dispatchResponseWithScalarBody;
 essentials.dispatchResponseWithJsonBody = express4.dispatchResponseWithJsonBody;
 
-essentials.vanillaExecutor = express4.vanillaExecutor;
-essentials.run = express4.vanillaExecutor;
-essentials.go = express4.vanillaExecutor;
-essentials.handleTimeout = express4.handleTimeout;
+//essentials.vanillaExecutor = express4.vanillaExecutor;
+//essentials.run = express4.vanillaExecutor;
+//essentials.go = express4.vanillaExecutor;
+//essentials.handleTimeout = express4.handleTimeout;
 essentials.handleTimeoutAndStatusCode = express4.handleTimeoutAndStatusCode;
 
 essentials.log = logging.loggerFactory;

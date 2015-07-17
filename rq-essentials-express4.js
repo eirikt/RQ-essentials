@@ -81,46 +81,6 @@ var __ = require('underscore'),
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     * <p>
-     * The identity function as a vanilla requestor chain executor/handler.
-     * </p>
-     * <p>
-     * <em>Aliases</em>
-     * </p>
-     * <p>
-     * <ul>
-     *     <li><code>run</code></li>
-     *     <li><code>go</code></li>
-     * </ul>
-     * </p>
-     * ...
-     * <p>
-     * <em>Usage examples</em>
-     * </p>
-     * <p>
-     * Convenient for triggering execution of RQ requestor chains:
-     * <pre>
-     *     var RQ = ('async-rq'),
-     *         rq = ('rq-essentials'),
-     *         run = rq.run;
-     *
-     *     RQ.sequence([
-     *         myRequestor,
-     *         myNextRequestor,
-     *         ...
-     *     ])(run)
-     * </pre>
-     * </p>
-     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
-     *
-     * @function
-     */
-    vanillaExecutor = exports.vanillaExecutor =
-        rq.identity,
-
-
-    /**
      * Success handling: Only supports status code only, via (Number) incoming argument.
      *
      * @function
@@ -185,15 +145,15 @@ var __ = require('underscore'),
     },
 
 
-    handleTimeout = exports.handleTimeout =
-        function (request, response) {
-            'use strict';
-            return function (success, failure) {
-                if (failure) {
-                    _handleFailure(success, failure, request, response);
-                }
-            };
-        },
+    //handleTimeout = exports.handleTimeout =
+    //    function (request, response) {
+    //        'use strict';
+    //        return function (success, failure) {
+    //            if (failure) {
+    //                _handleFailure(success, failure, request, response);
+    //            }
+    //        };
+    //    },
 
 
     handleTimeoutAndStatusCode = exports.handleTimeoutAndStatusCode =
