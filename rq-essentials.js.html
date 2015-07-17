@@ -31,7 +31,6 @@
 var __ = require('underscore'),
     utils = require('./utils'),
     curry = utils.curry,
-    clone = utils.clone,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -70,17 +69,18 @@ var __ = require('underscore'),
 //
 // A "data generator" requestor => No forwarding of incoming arguments/data.
 // A typical parallel requestor, or as a starting requestor in a sequence.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
      * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * &lt;p>
      * &lt;pre>
-     *     f(x) = F(callback(x))
+     *     f(x) = R(callback(x))
      * &lt;/pre>
      * or
      * &lt;pre>
-     *     f(x) = F(callback(x()))
+     *     f(x) = R(callback(x()))
      * &lt;/pre>
      * if the provided argument is a function.
      * &lt;/p>
@@ -149,6 +149,7 @@ var __ = require('underscore'),
 //
 // "Data-manipulating requestors";
 // takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -156,7 +157,7 @@ var __ = require('underscore'),
      * &lt;p>
      * The primary requestor factory:
      * &lt;pre>
-     *     f(g) = F(callback(g(x)))
+     *     f(g) = R(callback(g(x)))
      * &lt;/pre>
      * &lt;/p>
      * &lt;p>
@@ -192,7 +193,7 @@ var __ = require('underscore'),
      * &lt;/pre>
      * &lt;/p>
      * &lt;p>
-     * Transforming an by-reference object argument:
+     * Transforming a by-reference object argument:
      * &lt;pre>
      *     var RQ = ('async-rq'),
      *         rq = ('rq-essentials'),
@@ -310,6 +311,7 @@ var __ = require('underscore'),
 //
 // "Data-ignoring requestors",
 // ignores incoming arguments, does other stuff, causes various side-effects.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -317,7 +319,7 @@ var __ = require('underscore'),
      * &lt;p>
      * Execution of arbitrary function:
      * &lt;pre>
-     *     f(g) = g(); F(callback(x))
+     *     f(g) = g(); R(callback(x))
      * &lt;/pre>
      * &lt;/p>
      * &lt;p>
@@ -338,7 +340,7 @@ var __ = require('underscore'),
      * &lt;p>
      * Simple interceptor for execution of arbitrary function and argument:
      * &lt;pre>
-     *     f(g, y) = g(y); F(callback(x))
+     *     f(g, y) = g(y); R(callback(x))
      * &lt;/pre>
      * &lt;/p>
      * &lt;p>
@@ -358,7 +360,7 @@ var __ = require('underscore'),
 /**
  * &lt;p>
  * &lt;pre>
- *     f(g, y) = g(y); F(callback(x))
+ *     f(g, y) = g(y); R(callback(x))
  * &lt;/pre>
  * &lt;/p>
  */
@@ -406,9 +408,6 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
         function (options, condition) {
             'use strict';
@@ -559,11 +558,39 @@ var __ = require('underscore'),
         identityFactory(new Date()),
 
 
+    /**
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
+     * This is an alternative way of setting status code on the response - let the end-trigger/handler take care of it ...
+     * &lt;/p>
+     * ...
+     * &lt;p>
+     * &lt;em>Usage examples&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * Letting the end-trigger/handler take care of HTTP response status code - if not timing out after 2 seconds, that is.
+     * &lt;pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.notImplemented
+     *     ], 2000)(rq.handleTimeoutAndStatusCode(request, response)); // => HTTP Response 501
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     */
     notImplemented = exports.notImplemented =
-        errorFactory('Not yet implemented'),
+        function requestor(callback, args) {
+            return callback(undefined, 501);
+        },
 
 
     /**
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
      * The &lt;em>no operation (NOP/NOOP)&lt;/em> requestor:
      * &lt;pre>
      *     f(callback, x) = callback(x)
@@ -571,6 +598,10 @@ var __ = require('underscore'),
      *
      * Just pass things along without doing anything ...&lt;br/>
      * Also known as &lt;em>the null function&lt;/em>.
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
      */
     noopRequestor = exports.noopRequestor = exports.noop =
         function (callback, args) {
@@ -586,6 +617,7 @@ var __ = require('underscore'),
 // Functions that executes requests, synchronously or asynchronously
 // Asynchronicity is handled by callbacks.
 // ("callbacks" were previously called "request continuations"/"requestions".)
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -636,7 +668,57 @@ var __ = require('underscore'),
             //return callback(g(_clone(y)));
 
             return callback(g(y), undefined);
-        };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Handlers and instigators.
+
+// RQ requestor chains need an initial callback function to start executing.
+// This callback function also acts as a handler completed requestor chains.
+// The callback function has two arguments: &lt;code>success&lt;/code> and &lt;code> failure&lt;/code>,
+// handling both successful executions and failures, e.g. timeouts.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
+     * The identity function as a vanilla requestor chain executor/handler.
+     * &lt;/p>
+     * &lt;p>
+     * &lt;em>Aliases&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;ul>
+     *     &lt;li>&lt;code>run&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>go&lt;/code>&lt;/li>
+     * &lt;/ul>
+     * &lt;/p>
+     * ...
+     * &lt;p>
+     * &lt;em>Usage examples&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * Convenient for triggering execution of RQ requestor chains:
+     * &lt;pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials'),
+     *         run = rq.run;
+     *
+     *     RQ.sequence([
+     *         myRequestor,
+     *         myNextRequestor,
+     *         ...
+     *     ])(run)
+     * &lt;/pre>
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     */
+    vanillaExecutor = exports.vanillaExecutor =
+        identity;
 </code></pre>
         </article>
     </section>
@@ -647,13 +729,13 @@ var __ = require('underscore'),
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#getFactory">getFactory</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#instrumentedConditionalFactory">instrumentedConditionalFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#getFactory">getFactory</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Jul 04 2015 19:27:10 GMT+0200 (W. Europe Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jul 17 2015 15:34:27 GMT+0200 (W. Europe Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
