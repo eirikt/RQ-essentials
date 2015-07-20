@@ -560,6 +560,7 @@ var __ = require('underscore'),
      */
     notImplemented = exports.notImplemented =
         function requestor(callback, args) {
+            'use strict';
             return callback(undefined, 501);
         },
 
