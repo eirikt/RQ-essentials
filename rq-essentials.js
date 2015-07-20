@@ -380,18 +380,22 @@ var __ = require('underscore'),
         },
 
 
+// TODO: Specify/Test this one
     instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
         function (options, condition) {
             'use strict';
             return function requestor(callback, args) {
-                var executedCondition = __.isFunction(condition) ? condition.call(this, args) : condition;
-                if (executedCondition) {
+                // TODO: Suspicious recursive invocation of condition argument ... What does it really mean?
+                while (__.isFunction(condition)) {
+                    condition = __.isFunction(condition) ? condition.call(this, args) : condition;
+                }
+                if (condition) {
                     if (options && options.success) {
                         console.log(options.name + ': ' + options.success);
                     }
                     return callback(args, undefined);
-                }
-                else {
+
+                } else {
                     if (options && options.failure) {
                         console.warn(options.name + ': ' + options.failure);
                     }
