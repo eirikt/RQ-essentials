@@ -1,4 +1,4 @@
-/* global require:false,  JSON:false */
+/* global require:false, JSON:false */
 
 var __ = require('underscore'),
     RQ = require('async-rq'),

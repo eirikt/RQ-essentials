@@ -3,7 +3,7 @@
 
 // TODO: Specify/Test these
 
-var
+var __ = require('underscore'),
 
     /**
      * Local reference for faster look-up
@@ -89,7 +89,7 @@ var
             return function () {
                 return fn.apply(this, args.concat(toArray(arguments)));
             };
-        };
+        },
 
 /**
  * @see http://fitzgen.github.com/wu.js/
@@ -123,3 +123,80 @@ var
 //            return autoCurry(this, n);
 //        };
 //    })();
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Predicate factories / higher-order functions
+// Generic curry-friendly helper (higher order) functions
+// TODO: Find some decent third-party lib for these things ...
+///////////////////////////////////////////////////////////////////////////////
+
+    /** Exhausting higher-order negation */
+    not = exports.not =
+        function (condition) {
+            'use strict';
+            return function (args) {
+                while (__.isFunction(condition)) {
+                    condition = __.isFunction(condition) ? condition.call(this, args) : condition;
+                }
+                return !condition;
+            };
+        },
+
+    /** Higher-order _.isNumber */
+    isNumber = exports.isNumber =
+        function (numberObj) {
+            'use strict';
+            return function () {
+                return __.isNumber(numberObj);
+            };
+        },
+
+    isHttpMethod = exports.isHttpMethod =
+        function (httpMethod, request) {
+            'use strict';
+            return function () {
+                return request.method === httpMethod;
+            };
+        },
+
+/*
+ isNotHttpMethod = exports.isNotHttpMethod =
+ function (httpMethod, request) {
+ 'use strict';
+ return function () {
+ return request.method !== httpMethod;
+ };
+ },
+ */
+
+    /**
+     * Meant for serialized/over-the-wire-sent data ...
+     */
+    isMissing = exports.isMissing =
+        function (valueOrArray) {
+            'use strict';
+            return function () {
+                if (!valueOrArray && valueOrArray !== 0) {
+                    return true;
+                }
+                return !!(__.isString(valueOrArray) && valueOrArray.trim() === '');
+            };
+        },
+
+    /**
+     * Meant for runtime objects ...
+     */
+    isEmpty = exports.isEmpty =
+        function (objectOrArray) {
+            'use strict';
+            return function () {
+                if (__.isArray(objectOrArray)) {
+                    return objectOrArray.length < 1;
+                }
+                if (__.isObject(objectOrArray)) {
+                    return Object.keys(objectOrArray).length === 0;
+                }
+                return isMissing(objectOrArray)();
+            };
+        };

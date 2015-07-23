@@ -1,4 +1,5 @@
-/* global require:false, exports:false, console:false */
+/* global require:false, exports:false, console:false, JSON:false */
+/* jshint -W024 */
 
 var __ = require('underscore'),
     utils = require('./utils'),
@@ -108,7 +109,32 @@ var __ = require('underscore'),
         function (x) {
             'use strict';
             return function requestor(callback, args) {
-                var retVal = __.isFunction(x) ? x.call(this) : x;
+                var retVal = __.isFunction(x) ? x.call(this) : x;//,
+                // TODO: Add support for $(args) placeholder (hack)
+                /*
+                 hasValue = !__.isUndefined(retVal),
+                 isStringValue = __.isString(retVal),
+                 //isObjectValue = __.isObject(retVal),
+                 hasPlaceholder,
+                 indexOfPlaceholderStart, indexOfPlaceholderEnd,
+                 logMessageBeforeArgs, logMessageAfterArgs;
+
+                 if (!hasValue || !isStringValue) {
+                 return callback(retVal, undefined);
+                 }
+
+                 hasPlaceholder = retVal.indexOf('$') > 0;
+
+                 if (!hasPlaceholder) {
+                 return callback(retVal, undefined);
+                 }
+
+                 indexOfPlaceholderStart = retVal.indexOf('$');
+                 indexOfPlaceholderEnd = retVal.indexOf('}');
+                 logMessageBeforeArgs = retVal.substring(0, indexOfPlaceholderStart);
+                 logMessageAfterArgs = retVal.substring(indexOfPlaceholderEnd + 1);
+                 retVal = logMessageBeforeArgs + JSON.stringify(args) + logMessageAfterArgs;
+                 */
                 return callback(retVal, undefined);
             };
         },

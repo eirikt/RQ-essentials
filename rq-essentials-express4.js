@@ -1,8 +1,17 @@
 /* global require:false, exports:false, console:false, JSON:false */
+/* jshint -W024 */
 
 var __ = require('underscore'),
     httpResponse = require('statuses'),
+    RQ = require('async-rq'),
     rq = require('./rq-essentials'),
+    utils = require('./utils'),
+    not = utils.not,
+    isMissing = utils.isMissing,
+    isEmpty = utils.isEmpty,
+    isHttpMethod = utils.isHttpMethod,
+    isNumber = utils.isNumber,
+    curry = utils.curry,
 
 // TODO: Document ...
     /**
@@ -86,7 +95,7 @@ var __ = require('underscore'),
      * @function
      * @private
      */
-    _handleSuccess = function (success, failure, request, response) {
+    _handleSuccess = function (doLog, success, failure, request, response) {
         'use strict';
         var successMessage,
             uri = request.originalUrl,
@@ -98,10 +107,17 @@ var __ = require('underscore'),
             successMessage = httpResponse[statusCode];
             response.status(statusCode).json(successMessage);
         }
-        console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
+        if (doLog) {
+            if (successMessage) {
+                console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
 
-        if (failure) {
-            console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+            } else {
+                console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully');
+            }
+
+            if (failure) {
+                console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+            }
         }
     },
 
@@ -112,7 +128,7 @@ var __ = require('underscore'),
      * @function
      * @private
      */
-    _handleFailure = function (success, failure, request, response) {
+    _handleFailure = function (doLog, success, failure, request, response) {
         'use strict';
         var failureMessage,
             internalServerError = httpResponse['Internal Server Error'],
@@ -145,27 +161,228 @@ var __ = require('underscore'),
     },
 
 
-    //handleTimeout = exports.handleTimeout =
-    //    function (request, response) {
-    //        'use strict';
-    //        return function (success, failure) {
-    //            if (failure) {
-    //                _handleFailure(success, failure, request, response);
-    //            }
-    //        };
-    //    },
+//handleTimeout = exports.handleTimeout =
+//    function (request, response) {
+//        'use strict';
+//        return function (success, failure) {
+//            if (failure) {
+//                _handleFailure(success, failure, request, response);
+//            }
+//        };
+//    },
 
 
     handleTimeoutAndStatusCode = exports.handleTimeoutAndStatusCode =
-        function (request, response) {
+        function (doLogArg, requestArg, responseArg) {
             'use strict';
+            var doLog = doLogArg,
+                request = requestArg,
+                response = responseArg;
+
+            if (arguments.length === 2) {
+                doLog = false;
+                request = doLogArg;
+                response = request;
+            }
             return function (success, failure) {
                 if (success) {
-                    _handleSuccess(success, failure, request, response);
-                    return;
+                    _handleSuccess(doLog, success, failure, request, response);
+
+                } else if (failure) {
+                    _handleFailure(doLog, success, failure, request, response);
                 }
-                if (failure) {
-                    _handleFailure(success, failure, request, response);
-                }
+
+                // else do nothing
             };
+        },
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Some curried Express requestors
+// Just add response object, then use them in RQ pipelines
+///////////////////////////////////////////////////////////////////////////////
+
+    silentRqDispatchResponseStatusCode = curry(dispatchResponseStatusCode, false),
+    silentRqDispatchResponseWithScalarBody = curry(dispatchResponseWithScalarBody, false),
+    silentRqDispatchResponseWithJsonBody = curry(dispatchResponseWithJsonBody, false),
+
+    verboseRqDispatchResponseStatusCode = curry(dispatchResponseStatusCode, true),
+    verboseRqDispatchResponseWithScalarBody = curry(dispatchResponseWithScalarBody, true),
+    verboseRqDispatchResponseWithJsonBody = curry(dispatchResponseWithJsonBody, true),
+
+
+    send200OkResponse = exports.send200OkResponse = curry(silentRqDispatchResponseStatusCode, 200),
+    send200OkResponseWithArgumentAsBody = exports.send200OkResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 200),
+    send200CreatedResponseWithBodyConsistingOf = exports.send200CreatedResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 200),
+    send201CreatedResponseWithArgumentAsBody = exports.send201CreatedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 201),
+    send201CreatedResponseWithBodyConsistingOf = exports.send201CreatedResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 201),
+    send202AcceptedResponse = exports.send202AcceptedResponse = curry(silentRqDispatchResponseStatusCode, 202),
+    send202AcceptedResponseWithArgumentAsBody = exports.send202AcceptedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 202),
+    send205ResetContentResponse = exports.send205ResetContentResponse = curry(silentRqDispatchResponseStatusCode, 205),
+    send400BadRequestResponseWithArgumentAsBody = exports.send400BadRequestResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 400),
+    send403ForbiddenResponseWithArgumentAsBody = exports.send403ForbiddenResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 403),
+    send404NotFoundResponseWithArgumentAsBody = exports.send404NotFoundResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 404),
+    send405MethodNotAllowedResponseWithArgumentAsBody = exports.send405MethodNotAllowedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 405),
+    send500InternalServerErrorResponse = exports.send500InternalServerErrorResponse = curry(silentRqDispatchResponseStatusCode, 500),
+    send500InternalServerErrorResponseWithArgumentAsBody = exports.send500InternalServerErrorResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 500),
+    send501NotImplementedServerErrorResponse = exports.send501NotImplementedServerErrorResponse = curry(silentRqDispatchResponseStatusCode, 501),
+
+
+    ensureHttpGet = exports.ensureHttpGet =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('GET', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports GET requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpPost = exports.ensureHttpPost =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('POST', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports POST requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpPut = exports.ensureHttpPut =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('PUT', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports PUT requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpDelete = exports.ensureHttpDelete =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('DELETE', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports DELETE requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensure = exports.ensure =
+        function (valueOrArray, request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(isMissing(valueOrArray)),
+                rq.value('Mandatory parameter is missing'),
+                send400BadRequestResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpResourceElement = exports.ensureHttpResourceElement =
+        function (resourceElementName, request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.value(request.params[resourceElementName]),
+                rq.if(isMissing),
+                rq.value('Mandatory HTTP URL element \'' + resourceElementName + '\' is missing'),
+                send400BadRequestResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpParameter = exports.ensureHttpParameter =
+        function (httpParameterName, request, response) {
+            'use strict';
+            return RQ.sequence([
+                RQ.parallel([
+                    function (callback, args) {
+                        if (request && request.body && __.isObject(request.body)) {
+                            callback(request.body[httpParameterName], undefined);
+                        } else {
+                            callback(undefined, undefined);
+                        }
+                    },
+                    rq.value(request.params[httpParameterName])
+                ]),
+                RQ.fallback([
+                    RQ.sequence([
+                        rq.if(function (args) {
+                            return args.length > 1 && args[0] && args[1];
+                        }),
+                        rq.value('HTTP parameter \'' + httpParameterName + '\' present in both body and URL'),
+                        send400BadRequestResponseWithArgumentAsBody(response)
+                    ]),
+                    RQ.sequence([
+                        function (callback, args) {
+                            var bodyParam = args[0],
+                                urlParam = args[1];
+
+                            if (bodyParam) {
+                                callback(bodyParam, undefined);
+
+                            } else {
+                                callback(urlParam, undefined);
+                            }
+                        },
+                        rq.if(isMissing),
+                        rq.value('Mandatory HTTP parameter \'' + httpParameterName + '\' is missing'),
+                        send400BadRequestResponseWithArgumentAsBody(response)
+                    ])
+                ])
+            ]);
+        },
+
+    ensureNumericHttpParameter = exports.ensureNumericHttpParameter =
+        function (httpParameterName, request, response) {
+            'use strict';
+            return RQ.fallback([
+                ensureHttpParameter(httpParameterName, request, response),
+                // TODO: If failed requestors could pass arguments to the next requestor in the fallback pipeline ...
+                // => Save a lot of boilerplate code (no need to retrieve stuff all over again) ...
+                // => Aggregation of failure messages ...
+                RQ.sequence([
+                    RQ.parallel([
+                        function (callback, args) {
+                            if (request && request.body && __.isObject(request.body)) {
+                                callback(request.body[httpParameterName], undefined);
+                            } else {
+                                callback(undefined, undefined);
+                            }
+                        },
+                        rq.value(request.params[httpParameterName])
+                    ]),
+                    RQ.fallback([
+                        function (callback, args) {
+                            var bodyParam = args[0],
+                                urlParam = args[1];
+
+                            if (bodyParam) {
+                                callback(bodyParam, undefined);
+
+                            } else {
+                                callback(urlParam, undefined);
+                            }
+                        }
+                    ]),
+                    rq.if(not(isNumber)),
+                    rq.value('Mandatory HTTP parameter \'' + httpParameterName + '\' is not a number'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ])
+            ]);
+        },
+
+    ensureHttpBody = exports.ensureHttpBody =
+        function (request, response) {
+            'use strict';
+            return RQ.fallback([
+                RQ.sequence([
+                    rq.if(isMissing(request.body)),
+                    rq.value('Mandatory request body is missing'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ]),
+                RQ.sequence([
+                    rq.if(isEmpty(request.body)),
+                    rq.value('Mandatory request body is not valid'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ])
+            ]);
         };
