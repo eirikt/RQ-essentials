@@ -1,4 +1,5 @@
-/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false, JSON:false */
+/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false, JSON:false, console:false */
+/* jshint -W030 */
 
 var sinon = require('sinon'),
     expect = require('chai').expect,

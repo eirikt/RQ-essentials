@@ -182,7 +182,7 @@ var __ = require('underscore'),
             if (arguments.length === 2) {
                 doLog = false;
                 request = doLogArg;
-                response = request;
+                response = requestArg;
             }
             return function (success, failure) {
                 if (success) {
@@ -197,6 +197,7 @@ var __ = require('underscore'),
         },
 
 
+// TODO: Move to 'app.config.js'? Or to RQ-essentials Express stuff
 ///////////////////////////////////////////////////////////////////////////////
 // Some curried Express requestors
 // Just add response object, then use them in RQ pipelines
