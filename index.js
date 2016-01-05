@@ -12,8 +12,8 @@ var essentials = require('./rq-essentials'),
 essentials.doLog = true;
 essentials.doNotLog = false;
 
-essentials.run = essentials.vanillaExecutor;
-essentials.go = essentials.vanillaExecutor;
+//essentials.run = essentials.vanillaExecutor;
+//essentials.go = essentials.vanillaExecutor;
 
 
 essentials.cacheWrite = caching.cacheWrite;

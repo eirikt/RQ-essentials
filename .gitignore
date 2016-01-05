@@ -11,4 +11,5 @@ node_modules
 site
 
 # Temp files
+dev.log
 howto.md

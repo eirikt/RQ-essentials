@@ -1,7 +1,8 @@
-/* global require:false, describe:false, it:false */
+/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false, JSON:false, console:false */
 /* jshint -W030 */
 
-var expect = require('chai').expect,
+var R = require('ramda'),
+    expect = require('chai').expect,
     utils = require('./../utils');
 
 
@@ -35,6 +36,38 @@ describe('utils "clone"', function () {
         expect(aClonedArray[1].getTime()).to.be.equal(new Date(2014, 10, 25, 0, 0, 0).getTime());
         expect(aClonedArray[1]).to.be.equal(aDate);
         expect(aClonedArray[2]).to.be.equal('Something else');
+    });
+});
+
+
+describe('utils "isFunction"', function () {
+    'use strict';
+
+    //it('should be a function', function () {
+    //    expect(utils.isFunction).to.exist;
+    //    expect(utils.isFunction).to.be.a.function;
+    //});
+
+    //it('...', function () {
+    //    var n = 13,
+    //        s = 'yo',
+    //        f = function(x, y){
+    //            return x + y;
+    //        };
+    //    expect(utils.isFunction(n)).to.be.false;
+    //    expect(utils.isFunction(s)).to.be.false;
+    //    expect(utils.isFunction(f)).to.be.true;
+    //});
+
+    it('what about ramda ...', function () {
+        var n = 13,
+            s = 'yo',
+            f = function(x, y){
+                return x + y;
+            };
+        expect(R.is(Function, n)).to.be.false;
+        expect(R.is(Function, s)).to.be.false;
+        expect(R.is(Function, f)).to.be.true;
     });
 });
 

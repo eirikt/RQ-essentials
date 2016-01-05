@@ -1,6 +1,6 @@
 /* global require:false, exports:false, console:false, JSON:false */
 
-var __ = require('underscore'),
+var R = require('ramda'),
 
 // TODO: Fix this lib, functions (including naming) seem strange and not consistent ...
     /**
@@ -10,7 +10,7 @@ var __ = require('underscore'),
         function (doLog, mongooseModel, mongooseModelFunction, conditions) {
             'use strict';
 
-            var func = __.isString(mongooseModelFunction) ?
+            var func = R.is(String, mongooseModelFunction) ?
                 mongooseModel[mongooseModelFunction] :
                 mongooseModelFunction;
 
@@ -38,7 +38,7 @@ var __ = require('underscore'),
     mongoose4ModelGenericInvocationWithJsonResultFactory = exports.mongooseJson =
         function (doLog, mongooseModel, mongooseModelFunctionName, conditions) {
             'use strict';
-            if (!__.isString(mongooseModelFunctionName)) {
+            if (R.not(R.is(String, mongooseModelFunctionName))) {
                 throw new Error('RQ-essentials-mongoose4 :: mongooseJson, second argument must be a String!');
             }
             var func = mongooseModel[mongooseModelFunctionName];

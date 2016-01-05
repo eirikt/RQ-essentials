@@ -1,56 +1,19 @@
-/* global exports:false, JSON:false */
-/* jshint -W121, -W126 */
+/* global require:false, exports:false */
 
-// TODO: Specify/Test these
-
-var __ = require('underscore'),
+var R = require('ramda'),
 
     /**
      * Local reference for faster look-up
      * @see https://github.com/loop-recur/FunctionalJS/blob/master/functional.js/
      */
     slice = Array.prototype.slice,
-//map = Array.prototype.map,
     isArray = Array.isArray,
 
     parse = JSON.parse,
     stringify = JSON.stringify,
 
 
-//isUndefined = exports.isUndefined =
-//    function (obj) {
-//        'use strict';
-//        return typeof obj === 'undefined';
-//    },
-
-
-//isString = exports.isString =
-//    function (obj) {
-//        'use strict';
-//        return typeof obj === 'string' || obj instanceof String;
-//    };//,
-
-
-//isNumber = exports.isNumber =
-//    function (obj) {
-//        'use strict';
-//        throw new Error('Not yet implemented');
-//    },
-
-
-//isDate = exports.isDate =
-//    function (obj) {
-//        'use strict';
-//        throw new Error('Not yet implemented');
-//    },
-
-
-//isFunction = exports.isFunction =
-//    function (obj) {
-//        'use strict';
-//        return obj && Object.prototype.toString.call(obj) === '[object Function]';
-//    },
-
+// TODO: Specify/Test those below
 
     /**
      * @see https://github.com/loop-recur/FunctionalJS/blob/master/functional.js/
@@ -128,27 +91,29 @@ var __ = require('underscore'),
 ///////////////////////////////////////////////////////////////////////////////
 // Predicate factories / higher-order functions
 // Generic curry-friendly helper (higher order) functions
+// TODO: Specify/Test these
 // TODO: Find some decent third-party lib for these things ...
 ///////////////////////////////////////////////////////////////////////////////
+
 
     /** Exhausting higher-order negation */
     not = exports.not =
         function (condition) {
             'use strict';
             return function (args) {
-                while (__.isFunction(condition)) {
-                    condition = __.isFunction(condition) ? condition.call(this, args) : condition;
+                while (R.is(Function, condition)) {
+                    condition = R.is(Function, condition) ? condition.call(this, args) : condition;
                 }
                 return !condition;
             };
         },
 
-    /** Higher-order _.isNumber */
+    /** Higher-order "isNumber" */
     isNumber = exports.isNumber =
         function (numberObj) {
             'use strict';
             return function () {
-                return __.isNumber(numberObj);
+                return R.is(Number, numberObj);
             };
         },
 
@@ -156,7 +121,7 @@ var __ = require('underscore'),
         function (httpMethod, request) {
             'use strict';
             return function () {
-                return request.method === httpMethod;
+                return request && request.method && request.method === httpMethod;
             };
         },
 
@@ -180,7 +145,7 @@ var __ = require('underscore'),
                 if (!valueOrArray && valueOrArray !== 0) {
                     return true;
                 }
-                return !!(__.isString(valueOrArray) && valueOrArray.trim() === '');
+                return !!(R.is(String, valueOrArray) && valueOrArray.trim() === '');
             };
         },
 
@@ -191,10 +156,10 @@ var __ = require('underscore'),
         function (objectOrArray) {
             'use strict';
             return function () {
-                if (__.isArray(objectOrArray)) {
+                if (R.isArrayLike(objectOrArray)) {
                     return objectOrArray.length < 1;
                 }
-                if (__.isObject(objectOrArray)) {
+                if (R.is(Object, objectOrArray)) {
                     return Object.keys(objectOrArray).length === 0;
                 }
                 return isMissing(objectOrArray)();

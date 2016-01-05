@@ -1,7 +1,7 @@
 /* global require:false, exports:false, console:false, JSON:false */
 /* jshint -W024 */
 
-var __ = require('underscore'),
+var R = require('ramda'),
     httpResponse = require('statuses'),
     RQ = require('async-rq'),
     rq = require('./rq-essentials'),
@@ -102,7 +102,7 @@ var __ = require('underscore'),
             internalServerError = httpResponse['Internal Server Error'],
             statusCode = internalServerError;
 
-        if (__.isNumber(success)) {
+        if (R.is(Number, success)) {
             statusCode = success;
             successMessage = httpResponse[statusCode];
             response.status(statusCode).json(successMessage);
@@ -134,10 +134,10 @@ var __ = require('underscore'),
             internalServerError = httpResponse['Internal Server Error'],
             statusCode = internalServerError;
 
-        if (__.isFunction(failure)) {
+        if (R.is(Function, failure)) {
             failureMessage = typeof failure;
 
-        } else if (__.isObject(failure)) {
+        } else if (R.is(Object, failure)) {
             failureMessage = 'Details: ';
             if (failure.name) {
                 failureMessage += failure.name;
@@ -148,7 +148,7 @@ var __ = require('underscore'),
                 failureMessage = JSON.stringify(failure);
             }
 
-        } else if (__.isNumber(failure)) {
+        } else if (R.is(Number, failure)) {
             statusCode = failure;
             failureMessage = httpResponse[statusCode];
 
@@ -296,7 +296,7 @@ var __ = require('underscore'),
             return RQ.sequence([
                 RQ.parallel([
                     function (callback, args) {
-                        if (request && request.body && __.isObject(request.body)) {
+                        if (request && request.body && R.is(Object, request.body)) {
                             callback(request.body[httpParameterName], undefined);
                         } else {
                             callback(undefined, undefined);
@@ -343,7 +343,7 @@ var __ = require('underscore'),
                 RQ.sequence([
                     RQ.parallel([
                         function (callback, args) {
-                            if (request && request.body && __.isObject(request.body)) {
+                            if (request && request.body && R.is(Object, request.body)) {
                                 callback(request.body[httpParameterName], undefined);
                             } else {
                                 callback(undefined, undefined);

@@ -1,9 +1,10 @@
-/* global require:false, exports:false, console:false, JSON:false */
+/* global require:false, exports:false, console:false */
 /* jshint -W024 */
 
-var __ = require('underscore'),
+var R = require('ramda'),
     utils = require('./utils'),
     curry = utils.curry,
+    isArray = Array.isArray,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -62,8 +63,9 @@ var __ = require('underscore'),
      * </p>
      * <p>
      * <ul>
-     *     <li><code>return</code></li>
      *     <li><code>value</code></li>
+     *     <li><code>return</code></li>
+     *     <li><code>continueWith</code></li>
      * </ul>
      * </p>
      * <p>
@@ -100,41 +102,54 @@ var __ = require('underscore'),
      *     ]);
      * </pre>
      * </p>
+     * <p>
+     * Extra/bonus feature: Including callback argument in string values:
+     * <pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.value(Math.random),
+     *         rq.value('Sending the random number $(args) to the next requestor'),
+     *         myNextRequestor,
+     *         ...
+     *     ]);
+     * </pre>
+     * </p>
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
      * @param {*} x a value or function, being or producing the argument that will be returned
      */
-    identityFactory = exports.return = exports.value =
+    identityFactory = exports.value = exports.return = exports.continueWith =
         function (x) {
             'use strict';
             return function requestor(callback, args) {
-                var retVal = __.isFunction(x) ? x.call(this) : x;//,
-                // TODO: Add support for $(args) placeholder (hack)
-                /*
-                 hasValue = !__.isUndefined(retVal),
-                 isStringValue = __.isString(retVal),
-                 //isObjectValue = __.isObject(retVal),
-                 hasPlaceholder,
-                 indexOfPlaceholderStart, indexOfPlaceholderEnd,
-                 logMessageBeforeArgs, logMessageAfterArgs;
+                var retVal = R.is(Function, x) ? x.call(this) : x,
 
-                 if (!hasValue || !isStringValue) {
-                 return callback(retVal, undefined);
-                 }
+                    hasValue = R.not(R.isNil(retVal)),
+                    isStringValue = R.is(String, retVal),
+                    hasPlaceholder,
+                    indexOfPlaceholderStart, indexOfPlaceholderEnd,
+                    logMessageBeforeArgs, logMessageAfterArgs;
 
-                 hasPlaceholder = retVal.indexOf('$') > 0;
+                if (!hasValue || !isStringValue || !args) {
+                    return callback(retVal, undefined);
+                }
 
-                 if (!hasPlaceholder) {
-                 return callback(retVal, undefined);
-                 }
+                // Hack: support for $() placeholder (when x is of string type) 
+                hasPlaceholder = retVal.indexOf('$') > 0;
+                if (!hasPlaceholder) {
+                    return callback(retVal, undefined);
+                }
+                indexOfPlaceholderStart = retVal.indexOf('$');
+                indexOfPlaceholderEnd = retVal.indexOf('}');
+                logMessageBeforeArgs = retVal.substring(0, indexOfPlaceholderStart);
+                logMessageAfterArgs = retVal.substring(indexOfPlaceholderEnd + 1);
 
-                 indexOfPlaceholderStart = retVal.indexOf('$');
-                 indexOfPlaceholderEnd = retVal.indexOf('}');
-                 logMessageBeforeArgs = retVal.substring(0, indexOfPlaceholderStart);
-                 logMessageAfterArgs = retVal.substring(indexOfPlaceholderEnd + 1);
-                 retVal = logMessageBeforeArgs + JSON.stringify(args) + logMessageAfterArgs;
-                 */
+                retVal = logMessageBeforeArgs + JSON.stringify(args) + logMessageAfterArgs;
+                // /Hack
+
                 return callback(retVal, undefined);
             };
         },
@@ -226,20 +241,6 @@ var __ = require('underscore'),
             'use strict';
             return function requestor(callback, args) {
                 return callback(g(args), undefined);
-
-                //var transformedVal1, transformedVal2;
-                //try {
-                //    transformedVal1 = g.call(this, clone(args));
-                //    //transformedVal2 = g(args);
-
-                //} catch (e) {
-                //    var ex = e;
-                //    console.error(e.message);
-                // }
-                //return callback(transformedVal1, undefined);
-
-                //return callback(g(clone(args)), undefined);
-
             };
         },
 
@@ -288,16 +289,19 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     propertyPickerFactory = exports.pick =
-        function (propertyName) {
+        function factory(propertyName) {
             'use strict';
             return function requestor(callback, args) {
-                var propertyValue = args[propertyName],
-                    retVal = __.isFunction(propertyValue) ? propertyValue.call(this) : propertyValue;
-                return callback(retVal, undefined);
+                var propertyValue;
+                if (R.not(R.isNil(args))) {
+                    if (isArray(args)) {
+                        propertyValue = R.map(R.prop(propertyName), args);
+                    } else {
+                        propertyValue = R.prop(propertyName, args);
+                    }
+                }
+                return callback(propertyValue, undefined);
             };
         },
 
@@ -412,8 +416,8 @@ var __ = require('underscore'),
             'use strict';
             return function requestor(callback, args) {
                 // TODO: Suspicious recursive invocation of condition argument ... What does it really mean?
-                while (__.isFunction(condition)) {
-                    condition = __.isFunction(condition) ? condition.call(this, args) : condition;
+                while (R.is(Function, condition)) {
+                    condition = R.is(Function, condition) ? condition.call(this, args) : condition;
                 }
                 if (condition) {
                     if (options && options.success) {
@@ -472,7 +476,7 @@ var __ = require('underscore'),
     /**
      * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * <p>
-     * The <em>nothing</em> requestor:
+     * The <em>"nothingness"</em> requestor:
      * <pre>
      *     f(callback, x) = callback(undefined)
      * </pre>
@@ -505,7 +509,7 @@ var __ = require('underscore'),
      *
      * @function
      */
-    nothingRequestor = exports.nothingRequestor = exports.undefined =
+    nothingRequestor = exports.nothingRequestor = exports.undefined = exports.unit =
         identityFactory(undefined),
 
 
@@ -540,24 +544,28 @@ var __ = require('underscore'),
 
 
     /**
-     * The UNIX timestamp requestor:
+     * The <em>UNIX timestamp</em> requestor:
      * <pre>
      *     f(callback, x) = callback(Date.now())
      * </pre>
      * Returning <code>Date.now()</code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
      */
     timestampRequestor = exports.timestampRequestor = exports.timestamp = exports.now =
-        identityFactory(Date.now()),
+        // TODO: This does not work, does it!?
+        //identityFactory(Date.now()),
+
+        identityFactory(Date.now),
 
 
     /**
-     * The today requestor:
+     * The <em>"today"</em> requestor:
      * <pre>
      *     f(callback, x) = callback(new Date())
      * </pre>
      */
-    dateRequestor = exports.dateRequestor = exports.date =
-        identityFactory(new Date()),
+    // TODO: This does not work, does it!?
+    //dateRequestor = exports.dateRequestor = exports.date =
+    //    identityFactory(new Date()),
 
 
     /**
@@ -720,5 +728,5 @@ var __ = require('underscore'),
      *
      * @function
      */
-    vanillaExecutor = exports.vanillaExecutor =
+    vanillaExecutor = exports.vanillaExecutor = exports.run = exports.go =
         identity;

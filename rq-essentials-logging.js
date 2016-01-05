@@ -1,6 +1,6 @@
-/* global require:false, JSON:false */
+/* global require:false, exports:false, JSON:false, console:false */
 
-var __ = require('underscore'),
+var R = require('ramda'),
     RQ = require('async-rq'),
     rq = require('./rq-essentials'),
 
@@ -10,8 +10,8 @@ var __ = require('underscore'),
 
             var logArgument = arguments[0],
 
-                hasLogArgument = !__.isUndefined(logArgument),
-                isObjectLogArgument = __.isObject(logArgument),
+                hasLogArgument = R.not(R.isNil(logArgument)),
+                isObjectLogArgument = R.is(Object, logArgument),
                 hasPlaceholder = hasLogArgument && !isObjectLogArgument && logArgument.indexOf('$') > 0,
                 indexOfPlaceholderStart, indexOfPlaceholderEnd,
                 logMessageBeforeArgs, logMessageAfterArgs;
@@ -19,7 +19,7 @@ var __ = require('underscore'),
             if (!hasLogArgument) {
                 return function requestor(callback, args) {
                     logArgument = args;
-                    isObjectLogArgument = __.isObject(logArgument);
+                    isObjectLogArgument = R.is(Object, logArgument);
                     if (isObjectLogArgument) {
                         logArgument = JSON.stringify(logArgument);
                     }
@@ -44,7 +44,7 @@ var __ = require('underscore'),
             logMessageAfterArgs = logArgument.substring(indexOfPlaceholderEnd + 1);
             return function requestor(callback, args) {
                 logArgument = args;
-                isObjectLogArgument = __.isObject(logArgument);
+                isObjectLogArgument = R.is(Object, logArgument);
                 if (isObjectLogArgument) {
                     logArgument = JSON.stringify(logArgument);
                 }

@@ -20,7 +20,7 @@ module.exports = function (grunt) {
                     'echo Available Grunt tasks are:',
                     'echo   test                        executes all Mocha tests',
                     'echo   lint (alias:jshint)         run JSHint',
-                    'echo   doc  (alias:docs,jsdoc)     build JSDoc (in local folder \'docs\''
+                    'echo   doc  (alias:docs,jsdoc)     build JSDoc (in local folder \'site\')'
                 ].join('&&')
             },
             // TODO: Introduce 'grunt-git'

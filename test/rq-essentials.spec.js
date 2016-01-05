@@ -1,8 +1,8 @@
-/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false */
+/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false, JSON:false, console:false */
 /* jshint -W030 */
 
 var expect = require('chai').expect,
-    __ = require('underscore'),
+    R = require('ramda'),
     RQ = require('async-rq'),
     rq = require('./../rq-essentials'),
     run = rq.vanillaExecutor,
@@ -151,7 +151,7 @@ describe('RQ-essentials', function () {
 
             nullRequestor(trivialCallback, args);
 
-            expect(__.keys(args).length).to.be.equal(1);
+            expect(Object.keys(args).length).to.be.equal(1);
             expect(args.entityId).to.be.equal(42);
         });
 
@@ -185,7 +185,7 @@ describe('RQ-essentials', function () {
 
             timestampRequestor(trivialCallback, args);
 
-            expect(__.keys(args).length).to.be.equal(1);
+            expect(Object.keys(args).length).to.be.equal(1);
             expect(args.entityId).to.be.equal(42);
         });
 
@@ -197,6 +197,114 @@ describe('RQ-essentials', function () {
             expect(executedTimestampRequestor).to.be.a('number');
             expect(executedTimestampRequestor).to.be.above(new Date(2015, 4, 1).getTime());
             expect(executedTimestampRequestor).to.be.below(Date.now());
+        });
+    });
+
+
+    describe('propertyPickerFactory', function () {
+        it('should exist', function () {
+            expect(rq.pick).to.exist;
+            expect(rq.pick).to.be.a('function');
+        });
+
+        it('should be a requestor factory, taking one single argument', function () {
+            var timestampRequestor = rq.pick;
+
+            expect(timestampRequestor.name).to.be.equal('factory');
+            expect(timestampRequestor.length).to.be.equal(1);
+
+            expect(timestampRequestor().name).to.be.equal('requestor');
+            expect(timestampRequestor().length).to.be.equal(2);
+        });
+
+        it('should return nothing if ...', function (done) {
+            RQ.sequence([
+                rq.undefined,
+                rq.pick(undefined),
+                function (callback, args) {
+                    expect(args).to.be.undefined;
+                    done();
+                }
+            ])(run);
+        });
+
+        it('should return nothing if ...', function (done) {
+            RQ.sequence([
+                rq.undefined,
+                rq.pick('year'),
+                function (callback, args) {
+                    expect(args).to.be.undefined;
+                    done();
+                }
+            ])(run);
+        });
+
+        it('should return nothing if ...', function (done) {
+            var obj = {
+                type: 'Tesla',
+                model: 'Model S'
+            };
+            RQ.sequence([
+                rq.value(obj),
+                rq.pick(undefined),
+                function (callback, args) {
+                    expect(args).to.be.undefined;
+                    done();
+                }
+            ])(run);
+        });
+
+        it('should pick a given property from an object, even if it does not exist', function (done) {
+            var obj = {
+                type: 'Tesla',
+                model: 'Model S'
+            };
+            RQ.sequence([
+                rq.value(obj),
+                rq.pick('year'),
+                function (callback, args) {
+                    expect(args).to.be.undefined;
+                    done();
+                }
+            ])(run);
+        });
+
+        it('should pick a given property from an object', function (done) {
+            var obj = {
+                type: 'Tesla',
+                model: 'Model S'
+            };
+            RQ.sequence([
+                rq.value(obj),
+                rq.pick('model'),
+                function (callback, args) {
+                    expect(args).to.be.equal('Model S');
+                    done();
+                }
+            ])(run);
+        });
+
+        it('should pick given properties from an array', function (done) {
+            var arr = [];
+            arr.push({
+                type: 'Tesla',
+                model: 'Model S'
+            });
+            arr.push({
+                type: 'Kia',
+                model: 'Soul'
+            });
+            RQ.sequence([
+                rq.value(arr),
+                rq.pick('model'),
+                function (callback, args) {
+                    expect(args).to.be.an.array;
+                    expect(args.length).to.be.equal(2);
+                    expect(args[0]).to.be.equal('Model S');
+                    expect(args[1]).to.be.equal('Soul');
+                    done();
+                }
+            ])(run);
         });
     });
 });

@@ -1,4 +1,4 @@
-/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false */
+/* global require:false, describe:false, it:false, beforeEach:false, afterEach:false, JSON:false, console:false */
 /* jshint -W030 */
 
 var expect = require('chai').expect,
