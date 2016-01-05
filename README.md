@@ -6,7 +6,7 @@
 &nbsp;
 [![Codacy Badge](https://www.codacy.com/project/badge/317c938385f6499ea0ac392d58d43001)](https://www.codacy.com/app/eiriktorske/RQ-essentials)
 &nbsp;
-[![License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
+[![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/eirikt/RQ-essentials/blob/master/README.md#license)
 
 Some basic ("essential") add-ons for Douglas Crockford's excellent [RQ][1] library.
 Most of them quite influenced by RQ's [official documentation][2].
@@ -27,7 +27,7 @@ Then this library will be published to [npm][10], I guess.
 ### [License](#license)
 The MIT License (MIT)
 
-Copyright (c) 2015 Eirik Torske
+Copyright (c) 2015-2016 Eirik Torske
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
