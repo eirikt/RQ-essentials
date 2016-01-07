@@ -205,15 +205,20 @@ describe('RQ-essentials', function () {
                 executedTimestampRequestor1 = timestampRequestor(trivialCallback),
                 executedTimestampRequestor2;
 
-            setTimeout(function(){
-                expect(executedTimestampRequestor1).to.be.below(Date.now());
-            }, 10);
-
-            executedTimestampRequestor2 = timestampRequestor(trivialCallback);
-            expect(executedTimestampRequestor2).to.be.above(executedTimestampRequestor1);
-            setTimeout(function(){
-                expect(executedTimestampRequestor2).to.be.below(Date.now());
-            }, 10);
+            RQ.sequence([
+                rq.wait(10),
+                function(callback, args) {
+                    expect(executedTimestampRequestor1).to.be.below(Date.now());
+                    executedTimestampRequestor2 = timestampRequestor(trivialCallback);
+                    return callback(args);
+                },
+                rq.wait(10),
+                function(callback, args) {
+                    expect(executedTimestampRequestor2).to.be.above(executedTimestampRequestor1);
+                    expect(executedTimestampRequestor2).to.be.below(Date.now());
+                    return callback(args);
+                }
+            ])(rq.do);
         });
     });
 

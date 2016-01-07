@@ -321,27 +321,6 @@ var R = require('ramda'),
      * <p>
      * Execution of arbitrary function:
      * <pre>
-     *     f(g) = g(); R(callback(x))
-     * </pre>
-     * </p>
-     * <p>
-     * The given function will be executed isolated from the requestor argument passing.
-     * </p>
-     */
-    arbitraryFunctionExecutorFactory = exports.execute = exports.terminate =
-        function (g) {
-            'use strict';
-            return function requestor(callback, args) {
-                g.call(this, null);
-                return callback(args, undefined);
-            };
-        },
-
-
-    /**
-     * <p>
-     * Simple interceptor for execution of arbitrary function and argument:
-     * <pre>
      *     f(g, y) = g(y); R(callback(x))
      * </pre>
      * </p>
@@ -349,7 +328,7 @@ var R = require('ramda'),
      * The given function will be executed isolated from the requestor argument passing.
      * </p>
      */
-    arbitraryFunctionAndArgumentExecutorFactory = exports.execArgs = exports.terminateArgs =
+    arbitraryFunctionExecutorFactory = exports.execute = exports.terminate =
         function (g, y) {
             'use strict';
             return function requestor(callback, args) {
@@ -399,7 +378,25 @@ var R = require('ramda'),
         },
 
 
-    waitFactory = exports.wait =
+    /**
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * <p>
+     * Delay requestor factory.
+     * </p>
+     * <p>
+     * <ul>
+     *     <li><code>wait</code></li>
+     * </ul>
+     * </p>
+     * <p>
+     * This factory creates requestors which just waits the given number of milliseconds.
+     * </p>
+     * <hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     * @param {*} g a function which is applied to the arguments
+     */
+    delayFactory = exports.dealy = exports.wait =
         function (suspensionPeriodInMilliseconds) {
             'use strict';
             return function requestor(callback, args) {
@@ -685,11 +682,8 @@ var R = require('ramda'),
      * </p>
      * <p>
      * <em>Aliases</em>
-     * </p>
-     * <p>
      * <ul>
-     *     <li><code>execute</code></li>
-     *     <li><code>exec</code></li>
+     *     <li><code>do</code></li>
      *     <li><code>go</code></li>
      *     <li><code>run</code></li>
      * </ul>
@@ -716,5 +710,5 @@ var R = require('ramda'),
      *
      * @function
      */
-    vanillaExecutor = exports.vanillaExecutor = exports.execute = exports.exec = exports.go = exports.run =
+    vanillaExecutor = exports.vanillaExecutor = exports.do = exports.go = exports.run =
         identity;
