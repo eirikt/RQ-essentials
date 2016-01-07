@@ -198,6 +198,23 @@ describe('RQ-essentials', function () {
             expect(executedTimestampRequestor).to.be.above(new Date(2015, 4, 1).getTime());
             expect(executedTimestampRequestor).to.be.below(Date.now());
         });
+
+        it('should return this exact time', function () {
+            var timestampRequestor = rq.timestamp,
+                trivialCallback = rq.identity,
+                executedTimestampRequestor1 = timestampRequestor(trivialCallback),
+                executedTimestampRequestor2;
+
+            setTimeout(function(){
+                expect(executedTimestampRequestor1).to.be.below(Date.now());
+            }, 10);
+
+            executedTimestampRequestor2 = timestampRequestor(trivialCallback);
+            expect(executedTimestampRequestor2).to.be.above(executedTimestampRequestor1);
+            setTimeout(function(){
+                expect(executedTimestampRequestor2).to.be.below(Date.now());
+            }, 10);
+        });
     });
 
 

@@ -25,14 +25,15 @@ essentials._resetStack = caching._resetStack;
 
 
 essentials.utilities = {};
+essentials.utilities.clone = utils.clone;
 
 
 essentials.predicates = {};
 essentials.predicates.not = utils.not;
+essentials.predicates.isNumber = utils.isNumber;
+essentials.predicates.isHttpMethod = utils.isHttpMethod;
 essentials.predicates.isMissing = utils.isMissing;
 essentials.predicates.isEmpty = utils.isEmpty;
-essentials.predicates.isHttpMethod = utils.isHttpMethod;
-essentials.predicates.isNumber = utils.isNumber;
 
 
 essentials.express = {};

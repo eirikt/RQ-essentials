@@ -14,7 +14,7 @@ describe('utils "clone"', function () {
         expect(utils.clone).to.be.a.function;
     });
 
-    it('should just return falsy values', function () {
+    it('should just "short-circuit" falsy values', function () {
         expect(utils.clone()).not.to.exist;
         expect(utils.clone(null)).to.be.null;
         expect(utils.clone(false)).to.be.false;

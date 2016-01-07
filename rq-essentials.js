@@ -551,21 +551,7 @@ var R = require('ramda'),
      * Returning <code>Date.now()</code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
      */
     timestampRequestor = exports.timestampRequestor = exports.timestamp = exports.now =
-        // TODO: This does not work, does it!?
-        //identityFactory(Date.now()),
-
         identityFactory(Date.now),
-
-
-    /**
-     * The <em>"today"</em> requestor:
-     * <pre>
-     *     f(callback, x) = callback(new Date())
-     * </pre>
-     */
-    // TODO: This does not work, does it!?
-    //dateRequestor = exports.dateRequestor = exports.date =
-    //    identityFactory(new Date()),
 
 
     /**
@@ -702,8 +688,10 @@ var R = require('ramda'),
      * </p>
      * <p>
      * <ul>
-     *     <li><code>run</code></li>
+     *     <li><code>execute</code></li>
+     *     <li><code>exec</code></li>
      *     <li><code>go</code></li>
+     *     <li><code>run</code></li>
      * </ul>
      * </p>
      * ...
@@ -728,5 +716,5 @@ var R = require('ramda'),
      *
      * @function
      */
-    vanillaExecutor = exports.vanillaExecutor = exports.run = exports.go =
+    vanillaExecutor = exports.vanillaExecutor = exports.execute = exports.exec = exports.go = exports.run =
         identity;

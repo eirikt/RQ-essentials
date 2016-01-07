@@ -96,7 +96,7 @@ var R = require('ramda'),
 ///////////////////////////////////////////////////////////////////////////////
 
 
-    /** Exhausting higher-order negation */
+    /** Higher-order exhausting negation */
     not = exports.not =
         function (condition) {
             'use strict';
@@ -124,16 +124,6 @@ var R = require('ramda'),
                 return request && request.method && request.method === httpMethod;
             };
         },
-
-/*
- isNotHttpMethod = exports.isNotHttpMethod =
- function (httpMethod, request) {
- 'use strict';
- return function () {
- return request.method !== httpMethod;
- };
- },
- */
 
     /**
      * Meant for serialized/over-the-wire-sent data ...
