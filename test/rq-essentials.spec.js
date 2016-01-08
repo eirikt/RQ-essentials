@@ -196,7 +196,14 @@ describe('RQ-essentials', function () {
 
             expect(executedTimestampRequestor).to.be.a('number');
             expect(executedTimestampRequestor).to.be.above(new Date(2015, 4, 1).getTime());
-            expect(executedTimestampRequestor).to.be.below(Date.now());
+
+            RQ.sequence([
+                rq.wait(10),
+                function(callback, args) {
+                    expect(executedTimestampRequestor).to.be.below(Date.now());
+                    return callback(args);
+                }
+            ])(trivialCallback);
         });
 
         it('should return this exact time', function () {
@@ -218,7 +225,7 @@ describe('RQ-essentials', function () {
                     expect(executedTimestampRequestor2).to.be.below(Date.now());
                     return callback(args);
                 }
-            ])(rq.do);
+            ])(trivialCallback);
         });
     });
 
