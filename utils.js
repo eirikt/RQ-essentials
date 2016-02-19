@@ -1,4 +1,5 @@
 /* global require:false, exports:false */
+/* jshint -W126 */
 
 var R = require('ramda'),
 
@@ -11,6 +12,14 @@ var R = require('ramda'),
 
     parse = JSON.parse,
     stringify = JSON.stringify,
+
+
+    logPreamble = exports.logPreamble =
+        function (mod) {
+            'use strict';
+            var rqEssentialsModule = (mod) ? ('-' + mod) : '';
+            return '[' + new Date().toISOString() + ' rq-essentials' + rqEssentialsModule + '] :: ';
+        },
 
 
 // TODO: Specify/Test those below

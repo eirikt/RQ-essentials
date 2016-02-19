@@ -1,4 +1,4 @@
-/* global require:false, exports:false, console:false */
+/* global require:false, exports:false, console:false, Buffer:false */
 
 var request = require('request'),
     iconv = require('iconv-lite'),
@@ -12,7 +12,7 @@ var request = require('request'),
      * @see https://github.com/mikeal/request
      * @see https://www.npmjs.org/package/request
      */
-    getFactory = exports.get =
+    httpGetFactory = exports.httpGet =
         function (encoding, uri) {
             'use strict';
             if (arguments.length < 2) {
@@ -42,7 +42,7 @@ var request = require('request'),
         },
 
 
-    getAndEncodeFactory = exports.getEncoded =
+    httpGetAndEncodeFactory = exports.httpGetEncoded =
         function (uri, encoding) {
             'use strict';
             return function requestor(callback, args) {

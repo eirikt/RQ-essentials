@@ -1,27 +1,41 @@
 /* global require:false, module:false */
 
 var essentials = require('./rq-essentials'),
+
     caching = require('./rq-essentials-caching'),
     express4 = require('./rq-essentials-express4'),
     logging = require('./rq-essentials-logging'),
-    mocha = require('./rq-essentials-mocha'),
+    rqMocha = require('./rq-essentials-mocha'),
     mongoose4 = require('./rq-essentials-mongoose4'),
     request = require('./rq-essentials-request'),
+
     utils = require('./utils');
+
 
 essentials.doLog = true;
 essentials.doNotLog = false;
 
-//essentials.run = essentials.vanillaExecutor;
-//essentials.go = essentials.vanillaExecutor;
+
+essentials.cache = {};
+essentials.cache._cache = caching._cache;
+essentials.cache.write = essentials.cache.put = caching.write;
+essentials.cache.read = essentials.cache.get = caching.read;
+essentials.cache.remove = essentials.cache.delete = caching.remove;
+
+essentials.cache._syncWrite = essentials.cache._syncPut = caching._synchronousWrite;      // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
+essentials.cache._syncRead = essentials.cache._syncGet = caching._synchronousRead;        // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
+essentials.cache._syncRemove = essentials.cache._syncDelete = caching._synchronousRemove; // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
+
+essentials.cache.addTo = caching.addToObject;
+essentials.cache.getFrom = caching.getFromObject;
 
 
-essentials.cacheWrite = caching.cacheWrite;
-essentials.cacheRead = caching.cacheRead;
-essentials.push = caching.push;
-essentials.pop = caching.pop;
-essentials._getStack = caching._getStack;
-essentials._resetStack = caching._resetStack;
+essentials.stack = {};
+essentials.stack._stack = caching._stack;
+essentials.stack._getStack = caching._getStack;
+essentials.stack._resetStack = caching._resetStack;
+essentials.stack.push = caching.push;
+essentials.stack.pop = caching.pop;
 
 
 essentials.utilities = {};
@@ -70,18 +84,26 @@ essentials.express.ensureHttpParameter = express4.ensureHttpParameter;
 essentials.express.ensureNumericHttpParameter = express4.ensureNumericHttpParameter;
 essentials.express.ensureHttpBody = express4.ensureHttpBody;
 
+
 essentials.log = logging.loggerFactory;
 
-essentials.executeAndVerify = mocha.executeAndVerify;
+
+essentials.mocha = {};
+essentials.mocha.executeAndVerify = rqMocha.executeAndVerify;
+
 
 essentials.mongoose = mongoose4.mongoose;
 essentials.mongooseJson = mongoose4.mongooseJson;
 essentials.mongooseFindInvocation = mongoose4.mongooseFindInvocation;
 essentials.mongooseQueryInvocation = mongoose4.mongooseQueryInvocation;
 
-essentials.get = request.get;
-essentials.getEncoded = request.getEncoded;
+
+essentials.http = {};
+essentials.http.get = request.httpGet;
+essentials.http.getEncoded = request.httpGetEncoded;
+
 
 essentials.version = require('./package').version;
+
 
 module.exports = essentials;
