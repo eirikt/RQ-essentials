@@ -27,6 +27,10 @@ var R = require('ramda'),
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode);
                 }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(args, undefined);
+                }
                 response.sendStatus(statusCode);
                 return callback(args, undefined);
             };
@@ -46,6 +50,10 @@ var R = require('ramda'),
             return function requestor(callback, responseBody) {
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(responseBody, undefined);
                 }
                 response.status(statusCode).json(responseBody);
                 return callback(responseBody, undefined);
@@ -73,6 +81,10 @@ var R = require('ramda'),
                 });
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(responseValues, undefined);
                 }
                 response.status(statusCode).json(responseBody);
                 return callback(responseValues, undefined);
