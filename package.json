@@ -1,6 +1,6 @@
 {
-    "name": "RQ-essentials",
-    "version": "0.0.6",
+    "name": "rq-essentials",
+    "version": "0.0.7",
     "description": "Basic/Essential add-ons for Douglas Crockford's RQ",
     "author": "Eirik Torske <eirik.torske@gmail.com>",
     "license": "MIT",
