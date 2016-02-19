@@ -199,7 +199,7 @@ describe('RQ-essentials', function () {
 
             RQ.sequence([
                 rq.wait(10),
-                function(callback, args) {
+                function (callback, args) {
                     expect(executedTimestampRequestor).to.be.below(Date.now());
                     return callback(args);
                 }
@@ -214,18 +214,61 @@ describe('RQ-essentials', function () {
 
             RQ.sequence([
                 rq.wait(10),
-                function(callback, args) {
+                function (callback, args) {
                     expect(executedTimestampRequestor1).to.be.below(Date.now());
                     executedTimestampRequestor2 = timestampRequestor(trivialCallback);
                     return callback(args);
                 },
                 rq.wait(10),
-                function(callback, args) {
+                function (callback, args) {
                     expect(executedTimestampRequestor2).to.be.above(executedTimestampRequestor1);
                     expect(executedTimestampRequestor2).to.be.below(Date.now());
                     return callback(args);
                 }
             ])(trivialCallback);
+        });
+    });
+
+
+    describe('uuidRequestor', function () {
+        it('should exist', function () {
+            expect(rq.uuid).to.exist;
+            expect(rq.uuid).to.be.a('function');
+        });
+
+        it('should be a requestor', function () {
+            var uuidRequestor = rq.uuid;
+
+            expect(uuidRequestor.name).to.be.equal('requestor');
+            expect(uuidRequestor.length).to.be.equal(2);
+        });
+
+        it('should ignore requestor incoming arguments', function () {
+            var uuidRequestor = rq.uuid,
+                trivialCallback = rq.identity,
+                args = { entityId: 42 };
+
+            uuidRequestor(trivialCallback, args);
+
+            expect(Object.keys(args).length).to.be.equal(1);
+            expect(args.entityId).to.be.equal(42);
+        });
+
+        it('should return a UUID-like string, at least', function () {
+            var uuidRequestor = rq.uuid,
+                trivialCallback = rq.identity,
+                executedUuidRequestor = uuidRequestor(trivialCallback),
+                uuidGroups;
+
+            expect(executedUuidRequestor.length).to.be.equal(36);
+
+            uuidGroups = executedUuidRequestor.split('-');
+            expect(uuidGroups.length).to.be.equal(5);
+            expect(uuidGroups[0].length).to.be.equal(8);
+            expect(uuidGroups[1].length).to.be.equal(4);
+            expect(uuidGroups[2].length).to.be.equal(4);
+            expect(uuidGroups[3].length).to.be.equal(4);
+            expect(uuidGroups[4].length).to.be.equal(12);
         });
     });
 

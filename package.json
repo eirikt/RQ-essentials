@@ -10,21 +10,22 @@
         "url": "https://github.com/eirikt/RQ-essentials.git"
     },
     "dependencies": {
-        "async-rq": "0.x",
-        "ramda": "0.x",
+        "async-rq": "0.0.x",
+        "iconv-lite": "0.4.x",
+        "ramda": "0.19.x",
         "request": "2.x",
-        "iconv-lite": "0.x",
-        "statuses": "1.x"
+        "statuses": "1.x",
+        "uuid": "2.x"
     },
     "devDependencies": {
-        "grunt": "0.x",
-        "grunt-cli": "0.x",
-        "grunt-shell": "1.x",
-        "grunt-jsdoc": "1.x",
-        "grunt-contrib-jshint": "0.x",
-        "grunt-mocha-test": "0.x",
-        "mocha": "2.x",
         "chai": "3.x",
+        "grunt": "0.4.x",
+        "grunt-cli": "0.1.x",
+        "grunt-contrib-jshint": "1.x",
+        "grunt-jsdoc": "1.x",
+        "grunt-mocha-test": "0.12.x",
+        "grunt-shell": "1.x",
+        "mocha": "2.x",
         "sinon": "1.x",
         "time-grunt": "1.x"
     },

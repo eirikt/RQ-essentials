@@ -2,9 +2,13 @@
 /* jshint -W024 */
 
 var R = require('ramda'),
+    uuid = require('uuid'),
+
     utils = require('./utils'),
     curry = utils.curry,
+
     isArray = Array.isArray,
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -162,6 +166,10 @@ var R = require('ramda'),
 //
 // "Data-manipulating requestors";
 // takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
+//
+// These resulting requestors do not protect/seal/clone incoming arguments in any way.
+// That is the callback function's responsibility!
+// (May consider using 'Immutable.js' or something in the future ...)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -338,13 +346,13 @@ var R = require('ramda'),
         },
 
 
-/**
- * <p>
- * <pre>
- *     f(g, y) = g(y); R(callback(x))
- * </pre>
- * </p>
- */
+///**
+// * <p>
+// * <pre>
+// *     f(g, y) = g(y); R(callback(x))
+// * </pre>
+// * </p>
+// */
 // Same as arbitraryFunctionExecutorFactory above ...
 //terminatorRequestorFactory = exports.terminate =
 //    function (callbackToInvoke, argsToBeInvokedWith) {
@@ -467,7 +475,8 @@ var R = require('ramda'),
 // Asynchronicity is handled by callbacks.
 // ("callbacks" were previously called "request continuations"/"requestions".)
 //
-// Standard 'canned' requestors below
+// Standard 'canned' requestors below:
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -549,6 +558,18 @@ var R = require('ramda'),
      */
     timestampRequestor = exports.timestampRequestor = exports.timestamp = exports.now =
         identityFactory(Date.now),
+
+
+    /**
+     * The <em>UUID</em> requestor:
+     * <pre>
+     *     f(callback, x) = callback(uuid.v4())
+     * </pre>
+     * Returning an RFC4122 version 4 UUID.
+     * @see https://github.com/defunctzombie/node-uuid
+     */
+    uuidRequestor = exports.uuidRequestor = exports.uuid =
+        identityFactory(uuid.v4),
 
 
     /**
@@ -710,5 +731,5 @@ var R = require('ramda'),
      *
      * @function
      */
-    vanillaExecutor = exports.vanillaExecutor = exports.do = exports.go = exports.run =
+    vanillaExecutor = exports.vanillaExecutor = exports.go = exports.run =
         identity;
