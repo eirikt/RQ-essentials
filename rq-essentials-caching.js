@@ -89,20 +89,20 @@ var R = require('ramda'),
             'use strict';
             var stringifiedObj,
                 stringifiedKey,
-                stringifiedArgs,
-                getLogMessagePreamble = function () {
-                    try {
-                        stringifiedObj = JSON.stringify(obj);
-                    } catch (e) {
-                        stringifiedObj = obj;
-                    }
-                    try {
-                        stringifiedKey = JSON.stringify(key);
-                    } catch (e) {
-                        stringifiedKey = obj;
-                    }
-                    return 'addToObject(' + stringifiedObj + ', \'' + stringifiedKey + '\') : ';
-                };
+                stringifiedArgs;//,
+                //getLogMessagePreamble = function () {
+                //    try {
+                //        stringifiedObj = JSON.stringify(obj);
+                //    } catch (e) {
+                //        stringifiedObj = obj;
+                //    }
+                //    try {
+                //        stringifiedKey = JSON.stringify(key);
+                //    } catch (e) {
+                //        stringifiedKey = obj;
+                //    }
+                //    return 'addToObject(' + stringifiedObj + ', \'' + stringifiedKey + '\') : ';
+                //};
             return function (callback, args) {
                 var errMsg;
                 try {
@@ -111,14 +111,17 @@ var R = require('ramda'),
                     stringifiedArgs = args;
                 }
                 if (!(R.is(Object, obj))) {
-                    errMsg = getLogMessagePreamble() + 'No suitable holder object given';
+                    //errMsg = getLogMessagePreamble() + 'No suitable holder object given';
+                    errMsg = utils.logPreamble('caching') + 'No suitable holder object given';
                 } else if (R.isArrayLike(obj)) {
-                    errMsg = getLogMessagePreamble() + 'Given holder object must be an object, not an array';
+                    //errMsg = getLogMessagePreamble() + 'Given holder object must be an object, not an array';
+                    errMsg = utils.logPreamble('caching') + 'Given holder object must be an object, not an array';
                 }
 
                 if (!key) {
                     if (!errMsg) {
-                        errMsg = getLogMessagePreamble() + 'Missing key';
+                        //errMsg = getLogMessagePreamble() + 'Missing key';
+                        errMsg = utils.logPreamble('caching') + 'Missing key';
                     } else {
                         errMsg += ' - and key is missing as well ...';
                     }
@@ -130,7 +133,8 @@ var R = require('ramda'),
                 }
 
                 obj[key.toString()] = args;
-                console.log(getLogMessagePreamble() + 'obj[' + stringifiedKey + ']=' + stringifiedArgs);
+                //console.log(getLogMessagePreamble() + 'obj[' + stringifiedKey + ']=' + stringifiedArgs);
+                console.log(utils.logPreamble('caching') + 'cache[\'' + key + '\'] stored');
                 return callback(args, undefined);
             };
         },
@@ -141,20 +145,20 @@ var R = require('ramda'),
             var stringifiedObj,
                 stringifiedKey,
                 stringifiedArgs,
-                retVal,
-                getLogMessagePreamble = function () {
-                    try {
-                        stringifiedObj = JSON.stringify(obj);
-                    } catch (e) {
-                        stringifiedObj = obj;
-                    }
-                    try {
-                        stringifiedKey = JSON.stringify(key);
-                    } catch (e) {
-                        stringifiedKey = obj;
-                    }
-                    return 'addToObject(' + stringifiedObj + ', \'' + stringifiedKey + '\') : ';
-                };
+                retVal;//,
+                //getLogMessagePreamble = function () {
+                //    try {
+                //        stringifiedObj = JSON.stringify(obj);
+                //    } catch (e) {
+                //        stringifiedObj = obj;
+                //    }
+                //    try {
+                //        stringifiedKey = JSON.stringify(key);
+                //    } catch (e) {
+                //        stringifiedKey = obj;
+                //    }
+                //    return 'addToObject(' + stringifiedObj + ', \'' + stringifiedKey + '\') : ';
+                //};
             return function (callback, args) {
                 var errMsg;
                 try {
@@ -163,14 +167,17 @@ var R = require('ramda'),
                     stringifiedArgs = args;
                 }
                 if (!(R.is(Object, obj))) {
-                    errMsg = getLogMessagePreamble() + 'No suitable holder object given';
+                    //errMsg = getLogMessagePreamble() + 'No suitable holder object given';
+                    errMsg = utils.logPreamble('caching') + 'No suitable holder object given';
                 } else if (R.isArrayLike(obj)) {
-                    errMsg = getLogMessagePreamble() + 'Given holder object must be an object, not an array';
+                    //errMsg = getLogMessagePreamble() + 'Given holder object must be an object, not an array';
+                    errMsg = utils.logPreamble('caching') + 'Given holder object must be an object, not an array';
                 }
 
                 if (!key) {
                     if (!errMsg) {
-                        errMsg = getLogMessagePreamble() + 'Missing key';
+                        //errMsg = getLogMessagePreamble() + 'Missing key';
+                        errMsg = utils.logPreamble('caching') + 'Missing key';
                     } else {
                         errMsg += ' - and key is missing as well ...';
                     }
@@ -182,7 +189,8 @@ var R = require('ramda'),
                 }
 
                 retVal = obj[key.toString()];
-                console.log(getLogMessagePreamble() + 'obj[' + stringifiedKey + ']=' + retVal);
+                //console.log(getLogMessagePreamble() + 'obj[' + stringifiedKey + ']=' + retVal);
+                errMsg = utils.logPreamble('caching') + 'cache[\'' + key + '\']=' + JSON.stringify(retVal);
                 return callback(retVal, undefined);
             };
         },
