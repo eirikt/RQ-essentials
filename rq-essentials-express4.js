@@ -226,7 +226,7 @@ var R = require('ramda'),
 
     send200OkResponse = exports.send200OkResponse = curry(silentRqDispatchResponseStatusCode, 200),
     send200OkResponseWithArgumentAsBody = exports.send200OkResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 200),
-    send200CreatedResponseWithBodyConsistingOf = exports.send200CreatedResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 200),
+    send200OkResponseWithBodyConsistingOf = exports.send200OkResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 200),
     send201CreatedResponseWithArgumentAsBody = exports.send201CreatedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 201),
     send201CreatedResponseWithBodyConsistingOf = exports.send201CreatedResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 201),
     send202AcceptedResponse = exports.send202AcceptedResponse = curry(silentRqDispatchResponseStatusCode, 202),

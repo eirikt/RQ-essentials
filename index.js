@@ -22,9 +22,9 @@ essentials.cache.write = essentials.cache.put = caching.write;
 essentials.cache.read = essentials.cache.get = caching.read;
 essentials.cache.remove = essentials.cache.delete = caching.remove;
 
-essentials.cache._syncWrite = essentials.cache._syncPut = caching._synchronousWrite;      // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
-essentials.cache._syncRead = essentials.cache._syncGet = caching._synchronousRead;        // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
-essentials.cache._syncRemove = essentials.cache._syncDelete = caching._synchronousRemove; // Not a requestor/Not asynchronous/ Ehh, synchronous, I mean
+essentials.cache._syncWrite = essentials.cache._syncPut = caching._synchronousWrite;      // Not a requestor/Not asynchronous (ehh, synchronous, I mean ...)
+essentials.cache._syncRead = essentials.cache._syncGet = caching._synchronousRead;        // Not a requestor/Not asynchronous (ehh, synchronous, I mean ...)
+essentials.cache._syncRemove = essentials.cache._syncDelete = caching._synchronousRemove; // Not a requestor/Not asynchronous (ehh, synchronous, I mean ...)
 
 essentials.cache.addTo = caching.addToObject;
 essentials.cache.getFrom = caching.getFromObject;
@@ -59,7 +59,7 @@ essentials.express.handleTimeoutAndStatusCode = express4.handleTimeoutAndStatusC
 
 essentials.express.send200OkResponse = express4.send200OkResponse;
 essentials.express.send200OkResponseWithArgumentAsBody = express4.send200OkResponseWithArgumentAsBody;
-essentials.express.send200CreatedResponseWithBodyConsistingOf = express4.send200CreatedResponseWithBodyConsistingOf;
+essentials.express.send200OkResponseWithBodyConsistingOf = express4.send200OkResponseWithBodyConsistingOf;
 essentials.express.send201CreatedResponseWithArgumentAsBody = express4.send201CreatedResponseWithArgumentAsBody;
 essentials.express.send201CreatedResponseWithBodyConsistingOf = express4.send201CreatedResponseWithBodyConsistingOf;
 essentials.express.send202AcceptedResponse = express4.send202AcceptedResponse;
