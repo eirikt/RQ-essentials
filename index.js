@@ -100,7 +100,6 @@ essentials.mongooseQueryInvocation = mongoose4.mongooseQueryInvocation;
 
 essentials.http = {};
 essentials.http.get = request.httpGet;
-essentials.http.getEncoded = request.httpGetEncoded;
 
 
 essentials.version = require('./package').version;
