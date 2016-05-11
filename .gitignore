@@ -4,10 +4,13 @@
 # IDE stuff
 .idea
 
-# Windows
-.bin
+# Windows stuff
+grunt.cmd
 
+# Downloaded stuff
 node_modules
+
+# GitHub Pages-based sub-project
 site
 
 # Temp files
