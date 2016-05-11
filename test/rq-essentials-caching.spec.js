@@ -2,7 +2,7 @@
 /* jshint -W030 */
 
 var expect = require('chai').expect,
-    RQ = require('async-rq'),
+    RQ = require('rq-commonjs'),
     rq = require('./../rq-essentials'),
     rqCaching = require('./../rq-essentials-caching'),
     rqMocha = require('./../rq-essentials-mocha');

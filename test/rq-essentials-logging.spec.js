@@ -3,7 +3,7 @@
 
 var sinon = require('sinon'),
     expect = require('chai').expect,
-    RQ = require('async-rq'),
+    RQ = require('rq-commonjs'),
     rq = require('./../rq-essentials'),
     run = rq.vanillaExecutor,
     rqLogging = require('./../rq-essentials-logging'),

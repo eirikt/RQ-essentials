@@ -1,7 +1,6 @@
 /* global require:false, exports:false, JSON:false, console:false */
 
 var R = require('ramda'),
-    RQ = require('async-rq'),
     rq = require('./rq-essentials'),
 
     loggerFactory = exports.loggerFactory =

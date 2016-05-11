@@ -3,7 +3,7 @@
 
 var R = require('ramda'),
     httpResponse = require('statuses'),
-    RQ = require('async-rq'),
+    RQ = require('rq-commonjs'),
     rq = require('./rq-essentials'),
     utils = require('./utils'),
     not = utils.not,

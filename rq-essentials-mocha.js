@@ -1,6 +1,6 @@
 /* global require:false, exports:false */
 
-var RQ = require('async-rq'),
+var RQ = require('rq-commonjs'),
     rq = require('./rq-essentials'),
 
     /**

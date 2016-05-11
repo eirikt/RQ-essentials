@@ -3,7 +3,7 @@
 
 var expect = require('chai').expect,
     R = require('ramda'),
-    RQ = require('async-rq'),
+    RQ = require('rq-commonjs'),
     rq = require('./../rq-essentials'),
     run = rq.vanillaExecutor,
     utils = require('./../utils'),

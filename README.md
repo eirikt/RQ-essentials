@@ -11,8 +11,8 @@
 Some basic ("essential") add-ons for Douglas Crockford's excellent [RQ][1] library.
 Most of them quite influenced by RQ's [official documentation][2].
 
-This library is dependant on [async-rq][3], a CommonJS compliant fork of RQ. 
-RQ is [not][4] CommonJS compliant.
+This library uses a CommonJS-compliant [fork][3] of RQ.
+(RQ is [not][4] CommonJS-compliant.)
 
 
 ### Usage
@@ -50,6 +50,6 @@ SOFTWARE.
 
 [1]:  https://github.com/douglascrockford/RQ
 [2]:  http://rq.crockford.com
-[3]:  https://github.com/burningtree/async-rq
+[3]:  https://github.com/eirikt/RQ
 [4]:  https://github.com/douglascrockford/RQ/pull/7#issuecomment-94266330
 [10]: https://www.npmjs.com
