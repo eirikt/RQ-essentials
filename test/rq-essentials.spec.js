@@ -128,6 +128,33 @@ describe('RQ-essentials', function () {
                 rq.then(done)
             ])(run);
         });
+
+        it('should NOT mutate requestor factory arguments', function (done) {
+            var isSpecialNullEmpty = function isEmpty(x) {
+                    return x === 'null';
+                },
+                continueIfSpecialNull = rq.continueIf(isSpecialNullEmpty);
+
+            RQ.fallback([
+                RQ.sequence([
+                    rq.value(null),
+                    continueIfSpecialNull,
+                    rq.then(function () {
+                        throw new Error('Should not reach this place - requestor factory arguments are obviously mutated!');
+                    })
+                ]),
+                RQ.sequence([
+                    rq.value('null'),
+                    continueIfSpecialNull,
+                    rq.then(function () {
+                        done();
+                    })
+                ]),
+                function (callback, args) {
+                    throw new Error('Should not reach this place - requestor factory arguments are obviously mutated!');
+                }
+            ])(run);
+        });
     });
 
 

@@ -415,16 +415,20 @@ var R = require('ramda'),
         },
 
 
-// TODO: Specify/Test this one
     instrumentedConditionalFactory = exports.instrumentedCondition = exports.instrumentedIf =
         function (options, condition) {
             'use strict';
             return function requestor(callback, args) {
-                // TODO: Suspicious recursive invocation of condition argument ... What does it really mean?
-                while (R.is(Function, condition)) {
-                    condition = R.is(Function, condition) ? condition.call(this, args) : condition;
+                var appliedCondition = null;
+                if (R.is(Function, condition)) {
+                    appliedCondition = condition.call(this, args);
+                    while (R.is(Function, appliedCondition)) {
+                        appliedCondition = R.is(Function, appliedCondition) ? appliedCondition.call(this, args) : appliedCondition;
+                    }
+                } else {
+                    appliedCondition = condition;
                 }
-                if (condition) {
+                if (appliedCondition) {
                     if (options && options.success) {
                         console.log(options.name + ': ' + options.success);
                     }

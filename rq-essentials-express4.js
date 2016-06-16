@@ -17,7 +17,7 @@ var R = require('ramda'),
     /**
      * ...
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
@@ -41,7 +41,7 @@ var R = require('ramda'),
     /**
      * Include the complete requestor argument as response body as is.
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
@@ -66,7 +66,7 @@ var R = require('ramda'),
      * Include the given properties (stated in "responseKeys" array) only,
      * picked from the requestor argument ("responseValues" object) as response body.
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
