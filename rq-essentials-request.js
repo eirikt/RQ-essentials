@@ -28,26 +28,29 @@ var R = require('ramda'),
     httpGetFactory = exports.httpGet =
         function () {
             'use strict';
-            var options = {
-                method: 'GET',
-                encoding: 'UTF-8',
-                headers: {
+            var defaultOptions = {
+                    method: 'GET',
+                    encoding: 'UTF-8'
+                },
+                defaultOptionHeaders = {
                     'User-Agent': 'request'
-                }
-            };
+                },
+                options;
 
             if (R.is(Object, arguments[0])) {
-                R.forEach((objectKey) => {
-                    options[objectKey] = arguments[0][objectKey];
-                }, R.keys(arguments[0]));
+                options = arguments[0];
             } else {
-                options.uri = arguments[0];
+                options = {
+                    uri: arguments[0]
+                }
             }
+            R.forEach(function (defaultObjectKey) {
+                options[defaultObjectKey] = defaultOptions[defaultObjectKey];
+            }, R.keys(defaultOptions));
 
-            //if (options.baseUrl) {
-            //    options.uri = options.baseUrl + options.uri;
-            //    options.baseUrl = null;
-            //}
+            R.forEach(function (defaultOptionHeaderKey) {
+                options.headers[defaultOptionHeaderKey] = defaultOptionHeaders[defaultOptionHeaderKey];
+            }, R.keys(defaultOptionHeaders));
 
             return function requestor(callback, args) {
                 return request(options, function (err, response, body) {
