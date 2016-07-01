@@ -1,6 +1,7 @@
 /* global require:false, exports:false, console:false, Buffer:false */
 
-var request = require('request'),
+var R = require('ramda'),
+    request = require('request'),
     iconv = require('iconv-lite'),
 
     /**
@@ -25,21 +26,38 @@ var request = require('request'),
      * @function
      */
     httpGetFactory = exports.httpGet =
-        function (encoding, uri) {
+        function () {
             'use strict';
-            if (arguments.length < 2) {
-                uri = encoding;
-                encoding = null;
+            var options = {
+                method: 'GET',
+                encoding: 'UTF-8',
+                headers: {
+                    'User-Agent': 'request'
+                }
+            };
+
+            if (R.is(Object, arguments[0])) {
+                R.forEach((objectKey) => {
+                    options[objectKey] = arguments[0][objectKey];
+                }, R.keys(arguments[0]));
+            } else {
+                options.uri = arguments[0];
             }
+
+            //if (options.baseUrl) {
+            //    options.uri = options.baseUrl + options.uri;
+            //    options.baseUrl = null;
+            //}
+
             return function requestor(callback, args) {
-                return request(uri, function (err, response, body) {
-                        var decodedBody;
+                return request(options, function (err, response, body) {
+                        //var decodedBody;
                         if (err) {
                             console.error('[' + new Date().toISOString() + ' rq-essentials-request.get] ' + err);
                             return callback(undefined, err);
                         }
-                        if (response.request.href !== uri) {
-                            err = 'This is a response from \'' + response.request.href + '\', but the requested URL was \'' + uri + '\'. A redirection has probably taken place - this is not supported';
+                        if (response.request.href !== options.uri) {
+                            err = 'This is a response from \'' + response.request.href + '\', but the requested URL was \'' + options.uri + '\'. A redirection has probably taken place - this is not supported';
                             console.error('[' + new Date().toISOString() + ' rq-essentials-request.get] ' + err);
                             return callback(undefined, err);
                         }
@@ -49,14 +67,15 @@ var request = require('request'),
                             console.error('[' + new Date().toISOString() + ' rq-essentials-request.get] ' + err);
                             return callback(undefined, err);
 
-                        } else {
-                            if (encoding) {
-                                decodedBody = iconv.decode(new Buffer(body), encoding);
-                            } else {
-                                decodedBody = body;
-                            }
-                            return callback(decodedBody);
+                            //} else {
+                            //    if (encoding) {
+                            //        decodedBody = iconv.decode(new Buffer(body), encoding);
+                            //    } else {
+                            //        decodedBody = body;
+                            //    }
+                            //    return callback(decodedBody);
                         }
+                        return callback(body);
                     }
                 );
             };
