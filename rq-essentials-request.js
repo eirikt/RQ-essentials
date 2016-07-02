@@ -42,7 +42,7 @@ var R = require('ramda'),
             } else {
                 options = {
                     uri: arguments[0]
-                }
+                };
             }
             R.forEach(function (defaultObjectKey) {
                 options[defaultObjectKey] = defaultOptions[defaultObjectKey];
