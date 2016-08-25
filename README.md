@@ -14,6 +14,9 @@ Most of them quite influenced by RQ's [official documentation][2].
 This library uses a CommonJS-compliant [fork][3] of RQ.
 (RQ is [not][4] CommonJS-compliant.)
 
+For this library to work client-side, send e.g. the `index.js` file through [Browserify][20].
+(The resulting `rq-essentials.js` is 400 MB.)
+
 
 ### Usage
 
@@ -53,3 +56,4 @@ SOFTWARE.
 [3]:  https://github.com/eirikt/RQ
 [4]:  https://github.com/douglascrockford/RQ/pull/7#issuecomment-94266330
 [10]: https://www.npmjs.com
+[20]: http://browserify.org

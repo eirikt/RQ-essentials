@@ -1,4 +1,4 @@
-/* global require:false, module:false */
+/* global require:false, module:false, self:false */
 
 var essentials = require('./rq-essentials'),
 
@@ -7,9 +7,10 @@ var essentials = require('./rq-essentials'),
     logging = require('./rq-essentials-logging'),
     rqMocha = require('./rq-essentials-mocha'),
     mongoose4 = require('./rq-essentials-mongoose4'),
-    request = require('./rq-essentials-request'),
 
-    utils = require('./utils');
+    utils = require('./utils'),
+
+    isWorker = typeof self !== 'undefined';
 
 
 essentials.doLog = true;
@@ -98,11 +99,14 @@ essentials.mongooseFindInvocation = mongoose4.mongooseFindInvocation;
 essentials.mongooseQueryInvocation = mongoose4.mongooseQueryInvocation;
 
 
-essentials.http = {};
-essentials.http.get = request.httpGet;
-
-
 essentials.version = require('./package').version;
 
 
 module.exports = essentials;
+
+
+// Browser: Service Workers/Web Workers
+// Bonus: if in browser and Service Worker/Web Worker context is involved, then add to "worker global" as well
+if (isWorker) {
+    self.rq = essentials;
+}
