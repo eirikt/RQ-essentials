@@ -392,7 +392,11 @@ var R = require('ramda'),
      * Delay requestor factory.
      * </p>
      * <p>
+     * <em>Aliases</em>
+     * </p>
+     * <p>
      * <ul>
+     *     <li><code>delay</code></li>
      *     <li><code>wait</code></li>
      * </ul>
      * </p>
@@ -404,7 +408,7 @@ var R = require('ramda'),
      * @function
      * @param {*} g a function which is applied to the arguments
      */
-    delayFactory = exports.dealy = exports.wait =
+    delayFactory = exports.delay = exports.wait =
         function (suspensionPeriodInMilliseconds) {
             'use strict';
             return function requestor(callback, args) {
