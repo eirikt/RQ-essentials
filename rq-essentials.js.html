@@ -27,10 +27,16 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/* global require:false, exports:false, console:false */
+/* jshint -W024 */
 
-var __ = require('underscore'),
+var R = require('ramda'),
+    uuid = require('uuid'),
+
     utils = require('./utils'),
     curry = utils.curry,
+
+    isArray = Array.isArray,
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Basic functions
@@ -89,8 +95,9 @@ var __ = require('underscore'),
      * &lt;/p>
      * &lt;p>
      * &lt;ul>
-     *     &lt;li>&lt;code>return&lt;/code>&lt;/li>
      *     &lt;li>&lt;code>value&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>return&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>continueWith&lt;/code>&lt;/li>
      * &lt;/ul>
      * &lt;/p>
      * &lt;p>
@@ -127,16 +134,54 @@ var __ = require('underscore'),
      *     ]);
      * &lt;/pre>
      * &lt;/p>
+     * &lt;p>
+     * Extra/bonus feature: Including callback argument in string values:
+     * &lt;pre>
+     *     var RQ = ('async-rq'),
+     *         rq = ('rq-essentials');
+     *
+     *     RQ.sequence([
+     *         rq.value(Math.random),
+     *         rq.value('Sending the random number $(args) to the next requestor'),
+     *         myNextRequestor,
+     *         ...
+     *     ]);
+     * &lt;/pre>
+     * &lt;/p>
      * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      *
      * @function
      * @param {*} x a value or function, being or producing the argument that will be returned
      */
-    identityFactory = exports.return = exports.value =
+    identityFactory = exports.value = exports.return = exports.continueWith =
         function (x) {
             'use strict';
             return function requestor(callback, args) {
-                var retVal = __.isFunction(x) ? x.call(this) : x;
+                var retVal = R.is(Function, x) ? x.call(this) : x,
+
+                    hasValue = R.not(R.isNil(retVal)),
+                    isStringValue = R.is(String, retVal),
+                    hasPlaceholder,
+                    indexOfPlaceholderStart, indexOfPlaceholderEnd,
+                    logMessageBeforeArgs, logMessageAfterArgs;
+
+                if (!hasValue || !isStringValue || !args) {
+                    return callback(retVal, undefined);
+                }
+
+                // Hack: support for $() placeholder (when x is of string type) 
+                hasPlaceholder = retVal.indexOf('$') > 0;
+                if (!hasPlaceholder) {
+                    return callback(retVal, undefined);
+                }
+                indexOfPlaceholderStart = retVal.indexOf('$');
+                indexOfPlaceholderEnd = retVal.indexOf('}');
+                logMessageBeforeArgs = retVal.substring(0, indexOfPlaceholderStart);
+                logMessageAfterArgs = retVal.substring(indexOfPlaceholderEnd + 1);
+
+                retVal = logMessageBeforeArgs + JSON.stringify(args) + logMessageAfterArgs;
+                // /Hack
+
                 return callback(retVal, undefined);
             };
         },
@@ -149,6 +194,10 @@ var __ = require('underscore'),
 //
 // "Data-manipulating requestors";
 // takes incoming arguments, utilizes them somehow, maybe manipulates them - before passing them along.
+//
+// These resulting requestors do not protect/seal/clone incoming arguments in any way.
+// That is the callback function's responsibility!
+// (May consider using 'Immutable.js' or something in the future ...)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -228,20 +277,6 @@ var __ = require('underscore'),
             'use strict';
             return function requestor(callback, args) {
                 return callback(g(args), undefined);
-
-                //var transformedVal1, transformedVal2;
-                //try {
-                //    transformedVal1 = g.call(this, clone(args));
-                //    //transformedVal2 = g(args);
-
-                //} catch (e) {
-                //    var ex = e;
-                //    console.error(e.message);
-                // }
-                //return callback(transformedVal1, undefined);
-
-                //return callback(g(clone(args)), undefined);
-
             };
         },
 
@@ -290,16 +325,19 @@ var __ = require('underscore'),
         },
 
 
-    /**
-     * ...
-     */
     propertyPickerFactory = exports.pick =
-        function (propertyName) {
+        function factory(propertyName) {
             'use strict';
             return function requestor(callback, args) {
-                var propertyValue = args[propertyName],
-                    retVal = __.isFunction(propertyValue) ? propertyValue.call(this) : propertyValue;
-                return callback(retVal, undefined);
+                var propertyValue;
+                if (R.not(R.isNil(args))) {
+                    if (isArray(args)) {
+                        propertyValue = R.map(R.prop(propertyName), args);
+                    } else {
+                        propertyValue = R.prop(propertyName, args);
+                    }
+                }
+                return callback(propertyValue, undefined);
             };
         },
 
@@ -319,27 +357,6 @@ var __ = require('underscore'),
      * &lt;p>
      * Execution of arbitrary function:
      * &lt;pre>
-     *     f(g) = g(); R(callback(x))
-     * &lt;/pre>
-     * &lt;/p>
-     * &lt;p>
-     * The given function will be executed isolated from the requestor argument passing.
-     * &lt;/p>
-     */
-    arbitraryFunctionExecutorFactory = exports.execute = exports.terminate =
-        function (g) {
-            'use strict';
-            return function requestor(callback, args) {
-                g.call(this, null);
-                return callback(args, undefined);
-            };
-        },
-
-
-    /**
-     * &lt;p>
-     * Simple interceptor for execution of arbitrary function and argument:
-     * &lt;pre>
      *     f(g, y) = g(y); R(callback(x))
      * &lt;/pre>
      * &lt;/p>
@@ -347,7 +364,7 @@ var __ = require('underscore'),
      * The given function will be executed isolated from the requestor argument passing.
      * &lt;/p>
      */
-    arbitraryFunctionAndArgumentExecutorFactory = exports.execArgs = exports.terminateArgs =
+    arbitraryFunctionExecutorFactory = exports.execute = exports.terminate =
         function (g, y) {
             'use strict';
             return function requestor(callback, args) {
@@ -357,13 +374,13 @@ var __ = require('underscore'),
         },
 
 
-/**
- * &lt;p>
- * &lt;pre>
- *     f(g, y) = g(y); R(callback(x))
- * &lt;/pre>
- * &lt;/p>
- */
+///**
+// * &lt;p>
+// * &lt;pre>
+// *     f(g, y) = g(y); R(callback(x))
+// * &lt;/pre>
+// * &lt;/p>
+// */
 // Same as arbitraryFunctionExecutorFactory above ...
 //terminatorRequestorFactory = exports.terminate =
 //    function (callbackToInvoke, argsToBeInvokedWith) {
@@ -397,7 +414,29 @@ var __ = require('underscore'),
         },
 
 
-    waitFactory = exports.wait =
+    /**
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     * &lt;p>
+     * Delay requestor factory.
+     * &lt;/p>
+     * &lt;p>
+     * &lt;em>Aliases&lt;/em>
+     * &lt;/p>
+     * &lt;p>
+     * &lt;ul>
+     *     &lt;li>&lt;code>delay&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>wait&lt;/code>&lt;/li>
+     * &lt;/ul>
+     * &lt;/p>
+     * &lt;p>
+     * This factory creates requestors which just waits the given number of milliseconds.
+     * &lt;/p>
+     * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
+     *
+     * @function
+     * @param {*} g a function which is applied to the arguments
+     */
+    delayFactory = exports.delay = exports.wait =
         function (suspensionPeriodInMilliseconds) {
             'use strict';
             return function requestor(callback, args) {
@@ -412,14 +451,22 @@ var __ = require('underscore'),
         function (options, condition) {
             'use strict';
             return function requestor(callback, args) {
-                var executedCondition = __.isFunction(condition) ? condition.call(this, args) : condition;
-                if (executedCondition) {
+                var appliedCondition = null;
+                if (R.is(Function, condition)) {
+                    appliedCondition = condition.call(this, args);
+                    while (R.is(Function, appliedCondition)) {
+                        appliedCondition = R.is(Function, appliedCondition) ? appliedCondition.call(this, args) : appliedCondition;
+                    }
+                } else {
+                    appliedCondition = condition;
+                }
+                if (appliedCondition) {
                     if (options &amp;&amp; options.success) {
                         console.log(options.name + ': ' + options.success);
                     }
                     return callback(args, undefined);
-                }
-                else {
+
+                } else {
                     if (options &amp;&amp; options.failure) {
                         console.warn(options.name + ': ' + options.failure);
                     }
@@ -464,13 +511,14 @@ var __ = require('underscore'),
 // Asynchronicity is handled by callbacks.
 // ("callbacks" were previously called "request continuations"/"requestions".)
 //
-// Standard 'canned' requestors below
+// Standard 'canned' requestors below:
+//
 ///////////////////////////////////////////////////////////////////////////////
 
     /**
      * &lt;hr style="border:0;height:1px;background:#333;background-image:-webkit-linear-gradient(left, #ccc, #333, #ccc);background-image:-moz-linear-gradient(left, #ccc, #333, #ccc);background-image:-ms-linear-gradient(left, #ccc, #333, #ccc);"/>
      * &lt;p>
-     * The &lt;em>nothing&lt;/em> requestor:
+     * The &lt;em>"nothingness"&lt;/em> requestor:
      * &lt;pre>
      *     f(callback, x) = callback(undefined)
      * &lt;/pre>
@@ -503,7 +551,7 @@ var __ = require('underscore'),
      *
      * @function
      */
-    nothingRequestor = exports.nothingRequestor = exports.undefined =
+    nothingRequestor = exports.nothingRequestor = exports.undefined = exports.unit =
         identityFactory(undefined),
 
 
@@ -538,24 +586,26 @@ var __ = require('underscore'),
 
 
     /**
-     * The UNIX timestamp requestor:
+     * The &lt;em>UNIX timestamp&lt;/em> requestor:
      * &lt;pre>
      *     f(callback, x) = callback(Date.now())
      * &lt;/pre>
      * Returning &lt;code>Date.now()&lt;/code>, the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
      */
     timestampRequestor = exports.timestampRequestor = exports.timestamp = exports.now =
-        identityFactory(Date.now()),
+        identityFactory(Date.now),
 
 
     /**
-     * The today requestor:
+     * The &lt;em>UUID&lt;/em> requestor:
      * &lt;pre>
-     *     f(callback, x) = callback(new Date())
+     *     f(callback, x) = callback(uuid.v4())
      * &lt;/pre>
+     * Returning an RFC4122 version 4 UUID.
+     * @see https://github.com/defunctzombie/node-uuid
      */
-    dateRequestor = exports.dateRequestor = exports.date =
-        identityFactory(new Date()),
+    uuidRequestor = exports.uuidRequestor = exports.uuid =
+        identityFactory(uuid.v4),
 
 
     /**
@@ -584,6 +634,7 @@ var __ = require('underscore'),
      */
     notImplemented = exports.notImplemented =
         function requestor(callback, args) {
+            'use strict';
             return callback(undefined, 501);
         },
 
@@ -688,11 +739,10 @@ var __ = require('underscore'),
      * &lt;/p>
      * &lt;p>
      * &lt;em>Aliases&lt;/em>
-     * &lt;/p>
-     * &lt;p>
      * &lt;ul>
-     *     &lt;li>&lt;code>run&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>do&lt;/code>&lt;/li>
      *     &lt;li>&lt;code>go&lt;/code>&lt;/li>
+     *     &lt;li>&lt;code>run&lt;/code>&lt;/li>
      * &lt;/ul>
      * &lt;/p>
      * ...
@@ -717,7 +767,7 @@ var __ = require('underscore'),
      *
      * @function
      */
-    vanillaExecutor = exports.vanillaExecutor =
+    vanillaExecutor = exports.vanillaExecutor = exports.go = exports.run =
         identity;
 </code></pre>
         </article>
@@ -729,13 +779,13 @@ var __ = require('underscore'),
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#getFactory">getFactory</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheRemove">cacheRemove</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#delayFactory">delayFactory</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#isEmpty">isEmpty</a></li><li><a href="global.html#isMissing">isMissing</a></li><li><a href="global.html#isNumber">isNumber</a></li><li><a href="global.html#isWorker">isWorker</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#not">not</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#uuidRequestor">uuidRequestor</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jul 17 2015 15:34:27 GMT+0200 (W. Europe Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 25 2016 11:04:18 GMT+0200 (W. Europe Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

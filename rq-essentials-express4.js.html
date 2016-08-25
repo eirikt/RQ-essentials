@@ -27,16 +27,25 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/* global require:false, exports:false, console:false, JSON:false */
+/* jshint -W024 */
 
-var __ = require('underscore'),
+var R = require('ramda'),
     httpResponse = require('statuses'),
+    RQ = require('rq-commonjs'),
     rq = require('./rq-essentials'),
+    utils = require('./utils'),
+    not = utils.not,
+    isMissing = utils.isMissing,
+    isEmpty = utils.isEmpty,
+    isHttpMethod = utils.isHttpMethod,
+    isNumber = utils.isNumber,
+    curry = utils.curry,
 
 // TODO: Document ...
     /**
      * ...
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseStatusCode = exports.dispatchResponseStatusCode =
@@ -45,6 +54,10 @@ var __ = require('underscore'),
             return function requestor(callback, args) {
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode);
+                }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(args, undefined);
                 }
                 response.sendStatus(statusCode);
                 return callback(args, undefined);
@@ -56,7 +69,7 @@ var __ = require('underscore'),
     /**
      * Include the complete requestor argument as response body as is.
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithScalarBody = exports.dispatchResponseWithScalarBody =
@@ -65,6 +78,10 @@ var __ = require('underscore'),
             return function requestor(callback, responseBody) {
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(responseBody, undefined);
                 }
                 response.status(statusCode).json(responseBody);
                 return callback(responseBody, undefined);
@@ -77,7 +94,7 @@ var __ = require('underscore'),
      * Include the given properties (stated in "responseKeys" array) only,
      * picked from the requestor argument ("responseValues" object) as response body.
      *
-     * Charset will by default be set to UTF-8.
+     * Charset will by default be set to 'UTF-8'.
      * Content Type will by default be set to 'application/json'.
      */
     dispatchResponseWithJsonBody = exports.dispatchResponseWithJsonBody =
@@ -92,6 +109,10 @@ var __ = require('underscore'),
                 });
                 if (doLog) {
                     console.log('RQ-essentials-express4 :: HTTP Response status code ' + statusCode + ' { ' + JSON.stringify(responseBody) + ' }');
+                }
+                if (response.finished) {
+                    console.warn('RQ-essentials-express4 :: Response is already sent with status code ' + response.statusCode + ". Check your requestor setup!");
+                    return callback(responseValues, undefined);
                 }
                 response.status(statusCode).json(responseBody);
                 return callback(responseValues, undefined);
@@ -114,22 +135,29 @@ var __ = require('underscore'),
      * @function
      * @private
      */
-    _handleSuccess = function (success, failure, request, response) {
+    _handleSuccess = function (doLog, success, failure, request, response) {
         'use strict';
         var successMessage,
             uri = request.originalUrl,
             internalServerError = httpResponse['Internal Server Error'],
             statusCode = internalServerError;
 
-        if (__.isNumber(success)) {
+        if (R.is(Number, success)) {
             statusCode = success;
             successMessage = httpResponse[statusCode];
             response.status(statusCode).json(successMessage);
         }
-        console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
+        if (doLog) {
+            if (successMessage) {
+                console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully (' + successMessage + ')');
 
-        if (failure) {
-            console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+            } else {
+                console.log('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully');
+            }
+
+            if (failure) {
+                console.warn('RQ-essentials-express4 :: Resource \'' + uri + '\' processed successfully, but failure also present (' + failure + ')');
+            }
         }
     },
 
@@ -140,16 +168,16 @@ var __ = require('underscore'),
      * @function
      * @private
      */
-    _handleFailure = function (success, failure, request, response) {
+    _handleFailure = function (doLog, success, failure, request, response) {
         'use strict';
         var failureMessage,
             internalServerError = httpResponse['Internal Server Error'],
             statusCode = internalServerError;
 
-        if (__.isFunction(failure)) {
+        if (R.is(Function, failure)) {
             failureMessage = typeof failure;
 
-        } else if (__.isObject(failure)) {
+        } else if (R.is(Object, failure)) {
             failureMessage = 'Details: ';
             if (failure.name) {
                 failureMessage += failure.name;
@@ -160,7 +188,7 @@ var __ = require('underscore'),
                 failureMessage = JSON.stringify(failure);
             }
 
-        } else if (__.isNumber(failure)) {
+        } else if (R.is(Number, failure)) {
             statusCode = failure;
             failureMessage = httpResponse[statusCode];
 
@@ -173,29 +201,231 @@ var __ = require('underscore'),
     },
 
 
-    //handleTimeout = exports.handleTimeout =
-    //    function (request, response) {
-    //        'use strict';
-    //        return function (success, failure) {
-    //            if (failure) {
-    //                _handleFailure(success, failure, request, response);
-    //            }
-    //        };
-    //    },
+//handleTimeout = exports.handleTimeout =
+//    function (request, response) {
+//        'use strict';
+//        return function (success, failure) {
+//            if (failure) {
+//                _handleFailure(success, failure, request, response);
+//            }
+//        };
+//    },
 
 
     handleTimeoutAndStatusCode = exports.handleTimeoutAndStatusCode =
-        function (request, response) {
+        function (doLogArg, requestArg, responseArg) {
             'use strict';
+            var doLog = doLogArg,
+                request = requestArg,
+                response = responseArg;
+
+            if (arguments.length === 2) {
+                doLog = false;
+                request = doLogArg;
+                response = requestArg;
+            }
             return function (success, failure) {
                 if (success) {
-                    _handleSuccess(success, failure, request, response);
-                    return;
+                    _handleSuccess(doLog, success, failure, request, response);
+
+                } else if (failure) {
+                    _handleFailure(doLog, success, failure, request, response);
                 }
-                if (failure) {
-                    _handleFailure(success, failure, request, response);
-                }
+
+                // else do nothing
             };
+        },
+
+
+// TODO: Move to 'app.config.js'? Or to RQ-essentials Express stuff
+///////////////////////////////////////////////////////////////////////////////
+// Some curried Express requestors
+// Just add response object, then use them in RQ pipelines
+///////////////////////////////////////////////////////////////////////////////
+
+    silentRqDispatchResponseStatusCode = curry(dispatchResponseStatusCode, false),
+    silentRqDispatchResponseWithScalarBody = curry(dispatchResponseWithScalarBody, false),
+    silentRqDispatchResponseWithJsonBody = curry(dispatchResponseWithJsonBody, false),
+
+    verboseRqDispatchResponseStatusCode = curry(dispatchResponseStatusCode, true),
+    verboseRqDispatchResponseWithScalarBody = curry(dispatchResponseWithScalarBody, true),
+    verboseRqDispatchResponseWithJsonBody = curry(dispatchResponseWithJsonBody, true),
+
+
+    send200OkResponse = exports.send200OkResponse = curry(silentRqDispatchResponseStatusCode, 200),
+    send200OkResponseWithArgumentAsBody = exports.send200OkResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 200),
+    send200OkResponseWithBodyConsistingOf = exports.send200OkResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 200),
+    send201CreatedResponseWithArgumentAsBody = exports.send201CreatedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 201),
+    send201CreatedResponseWithBodyConsistingOf = exports.send201CreatedResponseWithBodyConsistingOf = curry(silentRqDispatchResponseWithJsonBody, 201),
+    send202AcceptedResponse = exports.send202AcceptedResponse = curry(silentRqDispatchResponseStatusCode, 202),
+    send202AcceptedResponseWithArgumentAsBody = exports.send202AcceptedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 202),
+    send205ResetContentResponse = exports.send205ResetContentResponse = curry(silentRqDispatchResponseStatusCode, 205),
+    send400BadRequestResponseWithArgumentAsBody = exports.send400BadRequestResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 400),
+    send403ForbiddenResponseWithArgumentAsBody = exports.send403ForbiddenResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 403),
+    send404NotFoundResponseWithArgumentAsBody = exports.send404NotFoundResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 404),
+    send405MethodNotAllowedResponseWithArgumentAsBody = exports.send405MethodNotAllowedResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 405),
+    send500InternalServerErrorResponse = exports.send500InternalServerErrorResponse = curry(silentRqDispatchResponseStatusCode, 500),
+    send500InternalServerErrorResponseWithArgumentAsBody = exports.send500InternalServerErrorResponseWithArgumentAsBody = curry(silentRqDispatchResponseWithScalarBody, 500),
+    send501NotImplementedServerErrorResponse = exports.send501NotImplementedServerErrorResponse = curry(silentRqDispatchResponseStatusCode, 501),
+
+
+    ensureHttpGet = exports.ensureHttpGet =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('GET', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports GET requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpPost = exports.ensureHttpPost =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('POST', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports POST requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpPut = exports.ensureHttpPut =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('PUT', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports PUT requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpDelete = exports.ensureHttpDelete =
+        function (request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(not(isHttpMethod('DELETE', request))),
+                rq.value('URI \'' + request.originalUrl + '\' supports DELETE requests only'),
+                send405MethodNotAllowedResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensure = exports.ensure =
+        function (valueOrArray, request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.if(isMissing(valueOrArray)),
+                rq.value('Mandatory parameter is missing'),
+                send400BadRequestResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpResourceElement = exports.ensureHttpResourceElement =
+        function (resourceElementName, request, response) {
+            'use strict';
+            return RQ.sequence([
+                rq.value(request.params[resourceElementName]),
+                rq.if(isMissing),
+                rq.value('Mandatory HTTP URL element \'' + resourceElementName + '\' is missing'),
+                send400BadRequestResponseWithArgumentAsBody(response)
+            ]);
+        },
+
+    ensureHttpParameter = exports.ensureHttpParameter =
+        function (httpParameterName, request, response) {
+            'use strict';
+            return RQ.sequence([
+                RQ.parallel([
+                    function (callback, args) {
+                        if (request &amp;&amp; request.body &amp;&amp; R.is(Object, request.body)) {
+                            callback(request.body[httpParameterName], undefined);
+                        } else {
+                            callback(undefined, undefined);
+                        }
+                    },
+                    rq.value(request.params[httpParameterName])
+                ]),
+                RQ.fallback([
+                    RQ.sequence([
+                        rq.if(function (args) {
+                            return args.length > 1 &amp;&amp; args[0] &amp;&amp; args[1];
+                        }),
+                        rq.value('HTTP parameter \'' + httpParameterName + '\' present in both body and URL'),
+                        send400BadRequestResponseWithArgumentAsBody(response)
+                    ]),
+                    RQ.sequence([
+                        function (callback, args) {
+                            var bodyParam = args[0],
+                                urlParam = args[1];
+
+                            if (bodyParam) {
+                                callback(bodyParam, undefined);
+
+                            } else {
+                                callback(urlParam, undefined);
+                            }
+                        },
+                        rq.if(isMissing),
+                        rq.value('Mandatory HTTP parameter \'' + httpParameterName + '\' is missing'),
+                        send400BadRequestResponseWithArgumentAsBody(response)
+                    ])
+                ])
+            ]);
+        },
+
+    ensureNumericHttpParameter = exports.ensureNumericHttpParameter =
+        function (httpParameterName, request, response) {
+            'use strict';
+            return RQ.fallback([
+                ensureHttpParameter(httpParameterName, request, response),
+                // TODO: If failed requestors could pass arguments to the next requestor in the fallback pipeline ...
+                // => Save a lot of boilerplate code (no need to retrieve stuff all over again) ...
+                // => Aggregation of failure messages ...
+                RQ.sequence([
+                    RQ.parallel([
+                        function (callback, args) {
+                            if (request &amp;&amp; request.body &amp;&amp; R.is(Object, request.body)) {
+                                callback(request.body[httpParameterName], undefined);
+                            } else {
+                                callback(undefined, undefined);
+                            }
+                        },
+                        rq.value(request.params[httpParameterName])
+                    ]),
+                    RQ.fallback([
+                        function (callback, args) {
+                            var bodyParam = args[0],
+                                urlParam = args[1];
+
+                            if (bodyParam) {
+                                callback(bodyParam, undefined);
+
+                            } else {
+                                callback(urlParam, undefined);
+                            }
+                        }
+                    ]),
+                    rq.if(not(isNumber)),
+                    rq.value('Mandatory HTTP parameter \'' + httpParameterName + '\' is not a number'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ])
+            ]);
+        },
+
+    ensureHttpBody = exports.ensureHttpBody =
+        function (request, response) {
+            'use strict';
+            return RQ.fallback([
+                RQ.sequence([
+                    rq.if(isMissing(request.body)),
+                    rq.value('Mandatory request body is missing'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ]),
+                RQ.sequence([
+                    rq.if(isEmpty(request.body)),
+                    rq.value('Mandatory request body is not valid'),
+                    send400BadRequestResponseWithArgumentAsBody(response)
+                ])
+            ]);
         };
 </code></pre>
         </article>
@@ -207,13 +437,13 @@ var __ = require('underscore'),
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionAndArgumentExecutorFactory">arbitraryFunctionAndArgumentExecutorFactory</a></li><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#dateRequestor">dateRequestor</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#getFactory">getFactory</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#propertyPickerFactory">propertyPickerFactory</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#arbitraryFunctionExecutorFactory">arbitraryFunctionExecutorFactory</a></li><li><a href="global.html#cacheRead">cacheRead</a></li><li><a href="global.html#cacheRemove">cacheRemove</a></li><li><a href="global.html#cacheWrite">cacheWrite</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#contradictionRequestor">contradictionRequestor</a></li><li><a href="global.html#curry">curry</a></li><li><a href="global.html#delayFactory">delayFactory</a></li><li><a href="global.html#dispatchResponseStatusCode">dispatchResponseStatusCode</a></li><li><a href="global.html#dispatchResponseWithJsonBody">dispatchResponseWithJsonBody</a></li><li><a href="global.html#dispatchResponseWithScalarBody">dispatchResponseWithScalarBody</a></li><li><a href="global.html#emptyRequestor">emptyRequestor</a></li><li><a href="global.html#executeAndVerify">executeAndVerify</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#identityFactory">identityFactory</a></li><li><a href="global.html#interceptorRequestor">interceptorRequestor</a></li><li><a href="global.html#isEmpty">isEmpty</a></li><li><a href="global.html#isMissing">isMissing</a></li><li><a href="global.html#isNumber">isNumber</a></li><li><a href="global.html#isWorker">isWorker</a></li><li><a href="global.html#lenientRequestorFactory">lenientRequestorFactory</a></li><li><a href="global.html#mongoose4FindFactory">mongoose4FindFactory</a></li><li><a href="global.html#mongoose4GenericInvocationFactory">mongoose4GenericInvocationFactory</a></li><li><a href="global.html#mongoose4ModelGenericInvocationWithJsonResultFactory">mongoose4ModelGenericInvocationWithJsonResultFactory</a></li><li><a href="global.html#mongoose4QueryInvocationFactory">mongoose4QueryInvocationFactory</a></li><li><a href="global.html#noopFactory">noopFactory</a></li><li><a href="global.html#noopRequestor">noopRequestor</a></li><li><a href="global.html#not">not</a></li><li><a href="global.html#nothingRequestor">nothingRequestor</a></li><li><a href="global.html#notImplemented">notImplemented</a></li><li><a href="global.html#requestorFactory">requestorFactory</a></li><li><a href="global.html#slice">slice</a></li><li><a href="global.html#tautologyRequestor">tautologyRequestor</a></li><li><a href="global.html#terminatorRequestor">terminatorRequestor</a></li><li><a href="global.html#timestampRequestor">timestampRequestor</a></li><li><a href="global.html#toArray">toArray</a></li><li><a href="global.html#uuidRequestor">uuidRequestor</a></li><li><a href="global.html#vanillaExecutor">vanillaExecutor</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jul 17 2015 15:34:27 GMT+0200 (W. Europe Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 25 2016 11:04:18 GMT+0200 (W. Europe Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>
