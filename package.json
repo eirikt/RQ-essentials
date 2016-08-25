@@ -1,6 +1,6 @@
 {
     "name": "rq-essentials",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "Basic/Essential add-ons for Douglas Crockford's RQ",
     "author": "Eirik Torske <eirik.torske@gmail.com>",
     "license": "MIT",
@@ -10,11 +10,8 @@
         "url": "https://github.com/eirikt/RQ-essentials.git"
     },
     "dependencies": {
-        "iconv-lite": "0.4.x",
-        "ramda": "0.21.x",
-        "request": "2.x",
+        "ramda": "0.22.x",
         "rq-commonjs": "eirikt/RQ",
-        "statuses": "1.x",
         "uuid": "2.x"
     },
     "devDependencies": {
@@ -25,7 +22,7 @@
         "grunt-jsdoc": "2.x",
         "grunt-mocha-test": "0.12.x",
         "grunt-shell": "1.x",
-        "mocha": "2.x",
+        "mocha": "3.x",
         "sinon": "1.x",
         "time-grunt": "1.x"
     },
