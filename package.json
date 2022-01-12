@@ -10,7 +10,7 @@
         "url": "https://github.com/eirikt/RQ-essentials.git"
     },
     "dependencies": {
-        "ramda": "0.22.x",
+        "ramda": "0.27.2",
         "rq-commonjs": "eirikt/RQ",
         "uuid": "2.x"
     },
